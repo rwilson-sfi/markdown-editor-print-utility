@@ -1,0 +1,48 @@
+<Window x:Class="MarkdownEditor.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        mc:Ignorable="d"
+        Title="Markdown Editor"
+        Width="1120"
+        Height="760"
+        MinWidth="720"
+        MinHeight="480"
+        AllowDrop="True"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing"
+        Drop="Window_Drop">
+    <DockPanel LastChildFill="True">
+        <Border DockPanel.Dock="Top" Background="#F3F5F7" BorderBrush="#D7DCE3" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" Margin="6,4">
+                <Button Content="New" Click="New_Click" ToolTip="Create a new Markdown document" />
+                <Button Content="Open…" Click="Open_Click" ToolTip="Open a Markdown document" />
+                <Button Content="Save" Click="Save_Click" ToolTip="Save the current document" />
+                <Button Content="Save As…" Click="SaveAs_Click" ToolTip="Save to another file" />
+                <Separator Margin="7,3" />
+                <Button Content="Print Preview" Click="PrintPreview_Click" MinWidth="96" />
+                <Separator Margin="7,3" />
+                <TextBlock Text="View:" VerticalAlignment="Center" Margin="4,0,6,0" />
+                <Button Content="Rich" Click="RichMode_Click" />
+                <Button Content="Source" Click="SourceMode_Click" />
+                <Button Content="Split" Click="SplitMode_Click" />
+                <Separator Margin="7,3" />
+                <Button Content="Exit" Click="Exit_Click" />
+            </StackPanel>
+        </Border>
+
+        <StatusBar DockPanel.Dock="Bottom" Background="#F3F5F7">
+            <StatusBarItem>
+                <TextBlock x:Name="StatusText" Text="Starting editor…" />
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock x:Name="ModeText" Text="Rich" />
+            </StatusBarItem>
+        </StatusBar>
+
+        <wv2:WebView2 x:Name="EditorWebView" DefaultBackgroundColor="White" />
+    </DockPanel>
+</Window>

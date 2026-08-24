@@ -1,0 +1,17 @@
+{
+  "name": "markdown-editor-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit && vite build"
+  },
+  "dependencies": {
+    "@milkdown/crepe": "7.22.1",
+    "@milkdown/kit": "7.22.1"
+  },
+  "devDependencies": {
+    "typescript": "5.9.2",
+    "vite": "8.2.2"
+  }
+}

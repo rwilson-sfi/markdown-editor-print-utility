@@ -1,0 +1,99 @@
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: #f5f6f8;
+  color: #1f2937;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#workspace {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+#workspace {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  background: #d7dce3;
+}
+
+#source-pane,
+#rich-pane {
+  min-width: 0;
+  min-height: 0;
+  background: #ffffff;
+}
+
+#source-pane {
+  display: none;
+  flex-direction: column;
+}
+
+#source-pane label {
+  padding: 8px 12px;
+  border-bottom: 1px solid #d7dce3;
+  color: #52606d;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+#source-editor {
+  width: 100%;
+  height: 100%;
+  resize: none;
+  border: 0;
+  outline: 0;
+  padding: 24px 28px 64px;
+  font: 14px/1.55 "Cascadia Mono", Consolas, monospace;
+  color: #172033;
+  background: #fbfcfe;
+  tab-size: 2;
+}
+
+#rich-pane {
+  display: block;
+  overflow: auto;
+}
+
+#rich-editor {
+  min-height: 100%;
+  padding: 12px 28px 64px;
+}
+
+body.mode-source #source-pane {
+  display: flex;
+}
+
+body.mode-source #rich-pane {
+  display: none;
+}
+
+body.mode-split #workspace {
+  grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
+}
+
+body.mode-split #source-pane {
+  display: flex;
+}
+
+body.mode-rich #rich-pane,
+body.mode-split #rich-pane {
+  display: block;
+}
+
+@media (max-width: 760px) {
+  body.mode-split #workspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}

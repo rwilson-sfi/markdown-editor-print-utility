@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MarkdownEditor.App/MarkdownEditor.App.csproj" />
+    <Project Path="src/MarkdownEditor.Core/MarkdownEditor.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MarkdownEditor.Core.Tests/MarkdownEditor.Core.Tests.csproj" />
+  </Folder>
+</Solution>

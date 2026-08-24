@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown editor</title>
+  </head>
+  <body class="mode-rich">
+    <main id="workspace" aria-label="Markdown document editor">
+      <section id="source-pane" aria-label="Markdown source">
+        <label for="source-editor">Markdown source</label>
+        <textarea id="source-editor" spellcheck="false" aria-label="Markdown source editor"></textarea>
+      </section>
+      <section id="rich-pane" aria-label="Formatted editor">
+        <div id="rich-editor"></div>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
