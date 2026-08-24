@@ -56,14 +56,16 @@ environment.
 
 ## Current implementation
 
-The first executable slice is available on `host/sfi-p14-2255`. It provides a Windows tray process,
-one-document rich/source/split editing, open/save/save-as, strict UTF-8 and line-ending preservation,
-drag/drop, a formatted print-preview window, and the standard Windows system print dialog. Documents
-containing known out-of-contract syntax open in source mode so a rich-editor round trip cannot
-silently normalize them.
+The current development slice is available on `host/sfi-p14-2255`. It provides one Windows tray
+process with a VS Code-style folder Explorer, multi-document tabs, rich/source/split editing,
+open/save/save-as, strict UTF-8 and line-ending preservation, drag/drop, a formatted print-preview
+window, and the standard Windows system print dialog. A per-user mutex and named pipe forward files
+from later launches into the existing window, so an Explorer Open command does not create a second
+tray instance. Documents containing known out-of-contract syntax open in source mode so a rich-editor
+round trip cannot silently normalize them.
 
-Tabs, crash recovery, external-change detection, single-instance forwarding, Explorer registration,
-startup registration, packaging, and signing remain in later phases.
+Crash recovery, external-change detection, recent files, Explorer registration, startup registration,
+packaging, and signing remain in later phases.
 
 ## Developer quick start
 

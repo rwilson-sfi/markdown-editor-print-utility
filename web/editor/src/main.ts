@@ -8,6 +8,7 @@ type EditorMode = 'rich' | 'source' | 'split'
 
 interface HostMessage {
   type: 'load' | 'mode' | 'focus'
+  documentId?: string
   markdown?: string
   mode?: EditorMode
 }
@@ -30,6 +31,7 @@ if (!sourceEditor) throw new Error('Source editor element was not found.')
 
 let suppressChange = false
 let sourceUpdateTimer: number | undefined
+let currentDocumentId = ''
 
 const postToHost = (message: unknown) => window.chrome?.webview?.postMessage(message)
 
@@ -48,14 +50,15 @@ crepe.on((listener) => {
     if (suppressChange || markdown === previousMarkdown) return
 
     sourceEditor.value = markdown
-    postToHost({ type: 'changed', markdown })
+    postToHost({ type: 'changed', documentId: currentDocumentId, markdown })
   })
 })
 
 await crepe.create()
 
-const loadMarkdown = (markdown: string) => {
+const loadMarkdown = (markdown: string, documentId: string) => {
   suppressChange = true
+  currentDocumentId = documentId
   sourceEditor.value = markdown
   crepe.editor.action(replaceAll(markdown, true))
   queueMicrotask(() => {
@@ -77,7 +80,7 @@ sourceEditor.addEventListener('input', () => {
     queueMicrotask(() => {
       suppressChange = false
     })
-    postToHost({ type: 'changed', markdown })
+    postToHost({ type: 'changed', documentId: currentDocumentId, markdown })
   }, 180)
 })
 
@@ -85,7 +88,7 @@ window.chrome?.webview?.addEventListener('message', (event) => {
   const message = event.data
   switch (message.type) {
     case 'load':
-      loadMarkdown(message.markdown ?? '')
+      loadMarkdown(message.markdown ?? '', message.documentId ?? '')
       break
     case 'mode':
       setMode(message.mode ?? 'rich')

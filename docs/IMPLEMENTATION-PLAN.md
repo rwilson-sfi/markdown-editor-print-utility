@@ -23,10 +23,16 @@ Exit evidence:
 
 ## Phase 2 — Multi-document and resilience
 
-- Add tabbed documents, recent files, drag/drop, and duplicate-path focus.
+Progress on 2026-08-24: multi-document tabs, lazy folder Explorer, duplicate-path focus, and
+single-instance file forwarding are implemented. Runtime acceptance is pending because the current
+host began denying execution of all freshly built unsigned .NET assemblies after compilation.
+
+- Add tabbed documents, recent files, drag/drop, and duplicate-path focus. **Tabs, drag/drop, and
+  duplicate-path focus implemented; recent files remain.**
 - Add external-change detection and conflict prompts.
 - Add recovery drafts and abnormal-exit restoration.
-- Add single-instance mutex and named-pipe command forwarding.
+- Add single-instance mutex and named-pipe command forwarding. **Implemented; runtime acceptance
+  remains pending.**
 - Complete keyboard/accessibility review.
 
 Exit evidence:

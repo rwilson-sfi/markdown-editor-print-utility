@@ -1,26 +1,27 @@
 <Window x:Class="MarkdownEditor.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MarkdownEditor.App"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
-        mc:Ignorable="d"
         Title="Markdown Editor"
-        Width="1120"
-        Height="760"
-        MinWidth="720"
-        MinHeight="480"
+        Width="1220"
+        Height="800"
+        MinWidth="820"
+        MinHeight="520"
+        Background="#FFFFFF"
         AllowDrop="True"
         Loaded="Window_Loaded"
         Closing="Window_Closing"
+        Closed="Window_Closed"
         Drop="Window_Drop">
     <DockPanel LastChildFill="True">
-        <Border DockPanel.Dock="Top" Background="#F3F5F7" BorderBrush="#D7DCE3" BorderThickness="0,0,0,1">
+        <Border DockPanel.Dock="Top" Background="#F3F3F3" BorderBrush="#D0D0D0" BorderThickness="0,0,0,1">
             <StackPanel Orientation="Horizontal" Margin="6,4">
                 <Button Content="New" Click="New_Click" ToolTip="Create a new Markdown document" />
-                <Button Content="Open…" Click="Open_Click" ToolTip="Open a Markdown document" />
-                <Button Content="Save" Click="Save_Click" ToolTip="Save the current document" />
-                <Button Content="Save As…" Click="SaveAs_Click" ToolTip="Save to another file" />
+                <Button Content="Open…" Click="Open_Click" ToolTip="Open one or more Markdown documents" />
+                <Button Content="Open Folder…" Click="OpenFolder_Click" ToolTip="Choose a folder for the Explorer pane" />
+                <Button Content="Save" Click="Save_Click" ToolTip="Save the active document" />
+                <Button Content="Save As…" Click="SaveAs_Click" ToolTip="Save the active document to another file" />
                 <Separator Margin="7,3" />
                 <Button Content="Print Preview" Click="PrintPreview_Click" MinWidth="96" />
                 <Separator Margin="7,3" />
@@ -33,16 +34,89 @@
             </StackPanel>
         </Border>
 
-        <StatusBar DockPanel.Dock="Bottom" Background="#F3F5F7">
-            <StatusBarItem>
-                <TextBlock x:Name="StatusText" Text="Starting editor…" />
+        <StatusBar DockPanel.Dock="Bottom" Background="#007ACC" Foreground="White" BorderThickness="0">
+            <StatusBarItem Foreground="White">
+                <TextBlock x:Name="StatusText" Text="Starting editor…" TextTrimming="CharacterEllipsis" />
             </StatusBarItem>
-            <Separator />
-            <StatusBarItem HorizontalAlignment="Right">
+            <Separator Background="#A8D8F0" />
+            <StatusBarItem HorizontalAlignment="Right" Foreground="White">
                 <TextBlock x:Name="ModeText" Text="Rich" />
             </StatusBarItem>
         </StatusBar>
 
-        <wv2:WebView2 x:Name="EditorWebView" DefaultBackgroundColor="White" />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250" MinWidth="150" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="#F3F3F3" BorderBrush="#D0D0D0" BorderThickness="0,0,1,0">
+                <DockPanel>
+                    <Grid DockPanel.Dock="Top" Margin="10,8,8,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="EXPLORER" FontSize="11" FontWeight="SemiBold" Foreground="#4A4A4A" VerticalAlignment="Center" />
+                        <Button Grid.Column="1" Content="…" Click="OpenFolder_Click" ToolTip="Open folder"
+                                Padding="4,0" Margin="2,0" MinWidth="24" Height="22" />
+                    </Grid>
+                    <TextBlock x:Name="FolderNameText" DockPanel.Dock="Top" Text="NO FOLDER OPEN"
+                               FontWeight="SemiBold" FontSize="12" Margin="10,4,6,7" TextTrimming="CharacterEllipsis" />
+                    <TreeView x:Name="FolderTree" ItemsSource="{Binding FolderRoots}"
+                              Background="Transparent" BorderThickness="0" Padding="3"
+                              TreeViewItem.Expanded="FolderTree_Expanded" MouseDoubleClick="FolderTree_MouseDoubleClick">
+                        <TreeView.Resources>
+                            <Style TargetType="TreeViewItem">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=OneWay}" />
+                            </Style>
+                            <HierarchicalDataTemplate DataType="{x:Type local:FolderTreeNode}" ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Margin="1,2">
+                                    <TextBlock Text="{Binding Icon}" Width="16" Foreground="#6A6A6A" />
+                                    <TextBlock Text="{Binding Name}" Foreground="#252526" />
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+                        </TreeView.Resources>
+                    </TreeView>
+                </DockPanel>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="#E5E5E5"
+                          ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" />
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TabControl x:Name="DocumentTabs" Grid.Row="0" ItemsSource="{Binding Documents}"
+                            SelectionChanged="DocumentTabs_SelectionChanged" Background="#ECECEC"
+                            BorderBrush="#D0D0D0" BorderThickness="0,0,0,1" Padding="0">
+                    <TabControl.Template>
+                        <ControlTemplate TargetType="TabControl">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                <TabPanel IsItemsHost="True" />
+                            </Border>
+                        </ControlTemplate>
+                    </TabControl.Template>
+                    <TabControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" MinWidth="100">
+                                <TextBlock Text="{Binding Header}" VerticalAlignment="Center" Margin="4,0,8,0" />
+                                <Button Content="×" Tag="{Binding}" Click="CloseTab_Click" ToolTip="Close"
+                                        Padding="2,0" Margin="0" MinWidth="20" Width="20" Height="20"
+                                        Background="Transparent" BorderThickness="0" FontSize="14" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </TabControl.ItemTemplate>
+                </TabControl>
+
+                <wv2:WebView2 x:Name="EditorWebView" Grid.Row="1" DefaultBackgroundColor="White" />
+            </Grid>
+        </Grid>
     </DockPanel>
 </Window>

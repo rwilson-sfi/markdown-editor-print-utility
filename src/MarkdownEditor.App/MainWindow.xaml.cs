@@ -1,13 +1,16 @@
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using MarkdownEditor.Core.Documents;
 using Microsoft.Web.WebView2.Core;
-using Microsoft.Win32;
 using DataFormats = System.Windows.DataFormats;
 using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+using OpenFolderDialog = Microsoft.Win32.OpenFolderDialog;
 using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 using WinForms = System.Windows.Forms;
 
@@ -17,25 +20,18 @@ public partial class MainWindow : Window, IDisposable
 {
     private readonly DocumentFileService _fileService = new();
     private readonly MarkdownRenderer _renderer = new();
-    private readonly string? _initialPath;
+    private readonly IReadOnlyList<string> _initialPaths;
     private readonly WinForms.NotifyIcon _trayIcon;
-
-    private string _markdown = "# Untitled\n\nStart writing…\n";
-    private string _lastSavedMarkdown = string.Empty;
-    private IReadOnlyList<string> _richEditorRisks = [];
-    private string? _filePath;
-    private bool _hasUtf8Bom;
-    private LineEnding _lineEnding = LineEnding.CrLf;
-    private string _editorMode = "rich";
+    private DocumentSession? _activeDocument;
     private bool _editorReady;
     private bool _allowClose;
     private bool _disposed;
 
-    public MainWindow(string? initialPath = null)
+    public MainWindow(IReadOnlyList<string>? initialPaths = null)
     {
-        _initialPath = initialPath;
+        _initialPaths = initialPaths ?? [];
         InitializeComponent();
-
+        DataContext = this;
         _trayIcon = new WinForms.NotifyIcon
         {
             Icon = System.Drawing.SystemIcons.Application,
@@ -44,18 +40,30 @@ public partial class MainWindow : Window, IDisposable
             ContextMenuStrip = BuildTrayMenu(),
         };
         _trayIcon.DoubleClick += (_, _) => Dispatcher.Invoke(RestoreWindow);
-
-        UpdateTitle();
+        UpdateWindowState();
     }
+
+    public ObservableCollection<DocumentSession> Documents { get; } = [];
+
+    public ObservableCollection<FolderTreeNode> FolderRoots { get; } = [];
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         await InitializeEditorAsync();
-
-        if (_initialPath is not null)
+        if (_initialPaths.Count > 0)
         {
-            await OpenPathAsync(_initialPath);
+            await OpenPathsAsync(_initialPaths);
         }
+        else
+        {
+            CreateUntitledDocument();
+        }
+    }
+
+    public async Task OpenPathsFromExternalAsync(IReadOnlyList<string> paths)
+    {
+        RestoreWindow();
+        await OpenPathsAsync(paths);
     }
 
     private async Task InitializeEditorAsync()
@@ -76,12 +84,8 @@ public partial class MainWindow : Window, IDisposable
         catch (WebView2RuntimeNotFoundException)
         {
             StatusText.Text = "Microsoft Edge WebView2 Runtime is required.";
-            MessageBox.Show(
-                this,
-                "Microsoft Edge WebView2 Runtime is required to use the formatted editor.",
-                "WebView2 Runtime not found",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            MessageBox.Show(this, "Microsoft Edge WebView2 Runtime is required to use the formatted editor.",
+                "WebView2 Runtime not found", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
 
@@ -98,9 +102,7 @@ public partial class MainWindow : Window, IDisposable
             }
         };
         EditorWebView.CoreWebView2.SetVirtualHostNameToFolderMapping(
-            "appassets.local",
-            assetDirectory,
-            CoreWebView2HostResourceAccessKind.DenyCors);
+            "appassets.local", assetDirectory, CoreWebView2HostResourceAccessKind.DenyCors);
         EditorWebView.Source = new Uri("https://appassets.local/index.html");
         StatusText.Text = "Loading editor…";
     }
@@ -118,17 +120,19 @@ public partial class MainWindow : Window, IDisposable
         {
             case "ready":
                 _editorReady = true;
-                await SendToEditorAsync(new { type = "load", markdown = _markdown });
-                await SendToEditorAsync(new { type = "mode", mode = _editorMode });
-                StatusText.Text = _richEditorRisks.Count > 0
-                    ? "Opened in Source mode to preserve unsupported Markdown syntax."
-                    : _filePath is null ? "Untitled document" : _filePath;
+                await LoadActiveDocumentAsync();
                 break;
-
             case "changed" when root.TryGetProperty("markdown", out var markdownProperty):
-                _markdown = markdownProperty.GetString() ?? string.Empty;
-                _richEditorRisks = MarkdownCompatibilityInspector.FindRichEditorRisks(_markdown);
-                UpdateTitle();
+                var documentId = root.TryGetProperty("documentId", out var idProperty)
+                    ? idProperty.GetString()
+                    : null;
+                var document = Documents.FirstOrDefault(candidate => candidate.Id == documentId) ?? _activeDocument;
+                document?.SetMarkdown(markdownProperty.GetString() ?? string.Empty);
+                if (ReferenceEquals(document, _activeDocument))
+                {
+                    UpdateWindowState();
+                }
+
                 break;
         }
     }
@@ -143,72 +147,59 @@ public partial class MainWindow : Window, IDisposable
         return Task.CompletedTask;
     }
 
-    private async void New_Click(object sender, RoutedEventArgs e)
-    {
-        if (!await ConfirmReplaceAsync())
-        {
-            return;
-        }
+    private void New_Click(object sender, RoutedEventArgs e) => CreateUntitledDocument();
 
-        _filePath = null;
-        _markdown = "# Untitled\n\nStart writing…\n";
-        _lastSavedMarkdown = string.Empty;
-        _richEditorRisks = [];
-        _hasUtf8Bom = false;
-        _lineEnding = LineEnding.CrLf;
-        _editorMode = "rich";
-        await SendToEditorAsync(new { type = "load", markdown = _markdown });
-        await SendToEditorAsync(new { type = "mode", mode = _editorMode });
-        ModeText.Text = "Rich";
-        StatusText.Text = "Untitled document";
-        UpdateTitle();
+    private void CreateUntitledDocument()
+    {
+        var document = DocumentSession.CreateUntitled();
+        Documents.Add(document);
+        DocumentTabs.SelectedItem = document;
     }
 
     private async void Open_Click(object sender, RoutedEventArgs e)
     {
-        if (!await ConfirmReplaceAsync())
-        {
-            return;
-        }
-
         var dialog = new OpenFileDialog
         {
-            Title = "Open Markdown document",
+            Title = "Open Markdown documents",
             Filter = "Markdown files (*.md;*.markdown)|*.md;*.markdown|All files (*.*)|*.*",
             CheckFileExists = true,
+            Multiselect = true,
         };
-
         if (dialog.ShowDialog(this) == true)
         {
-            await OpenPathAsync(dialog.FileName);
+            await OpenPathsAsync(dialog.FileNames);
+        }
+    }
+
+    private async Task OpenPathsAsync(IEnumerable<string> paths)
+    {
+        foreach (var path in paths.Where(MarkdownPath.IsSupported).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            await OpenPathAsync(path);
         }
     }
 
     private async Task OpenPathAsync(string path)
     {
+        var fullPath = Path.GetFullPath(path);
+        var existing = Documents.FirstOrDefault(document =>
+            string.Equals(document.FilePath, fullPath, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null)
+        {
+            DocumentTabs.SelectedItem = existing;
+            return;
+        }
+
         try
         {
-            var document = await _fileService.LoadAsync(path);
-            _filePath = document.Path;
-            _markdown = document.Text;
-            _lastSavedMarkdown = document.Text;
-            _richEditorRisks = MarkdownCompatibilityInspector.FindRichEditorRisks(document.Text);
-            _hasUtf8Bom = document.HasUtf8Bom;
-            _lineEnding = document.LineEnding;
-            _editorMode = _richEditorRisks.Count > 0 ? "source" : "rich";
-            await SendToEditorAsync(new { type = "load", markdown = _markdown });
-            await SendToEditorAsync(new { type = "mode", mode = _editorMode });
-            if (_richEditorRisks.Count > 0)
+            var file = await _fileService.LoadAsync(fullPath);
+            var document = DocumentSession.FromFile(file);
+            Documents.Add(document);
+            DocumentTabs.SelectedItem = document;
+            if (FolderRoots.Count == 0 && Path.GetDirectoryName(fullPath) is { } folder)
             {
-                ModeText.Text = "Source";
-                StatusText.Text = "Opened in Source mode to preserve unsupported Markdown syntax.";
+                SetFolderRoot(folder);
             }
-            else
-            {
-                StatusText.Text = document.Path;
-            }
-
-            UpdateTitle();
         }
         catch (UnsupportedTextEncodingException exception)
         {
@@ -220,13 +211,69 @@ public partial class MainWindow : Window, IDisposable
         }
     }
 
-    private async void Save_Click(object sender, RoutedEventArgs e) => await SaveAsync(forceSaveAs: false);
-
-    private async void SaveAs_Click(object sender, RoutedEventArgs e) => await SaveAsync(forceSaveAs: true);
-
-    private async Task<bool> SaveAsync(bool forceSaveAs)
+    private async void DocumentTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        var targetPath = _filePath;
+        if (e.Source != DocumentTabs)
+        {
+            return;
+        }
+
+        _activeDocument = DocumentTabs.SelectedItem as DocumentSession;
+        await LoadActiveDocumentAsync();
+    }
+
+    private async Task LoadActiveDocumentAsync()
+    {
+        if (_activeDocument is null)
+        {
+            UpdateWindowState();
+            return;
+        }
+
+        await SendToEditorAsync(new
+        {
+            type = "load",
+            documentId = _activeDocument.Id,
+            markdown = _activeDocument.Markdown,
+        });
+        await SendToEditorAsync(new { type = "mode", mode = _activeDocument.EditorMode });
+        UpdateWindowState();
+    }
+
+    private async void CloseTab_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button { Tag: DocumentSession document }
+            || !await ConfirmCloseDocumentAsync(document))
+        {
+            return;
+        }
+
+        Documents.Remove(document);
+        if (Documents.Count == 0)
+        {
+            CreateUntitledDocument();
+        }
+    }
+
+    private async void Save_Click(object sender, RoutedEventArgs e)
+    {
+        if (_activeDocument is not null)
+        {
+            await SaveDocumentAsync(_activeDocument, forceSaveAs: false);
+        }
+    }
+
+    private async void SaveAs_Click(object sender, RoutedEventArgs e)
+    {
+        if (_activeDocument is not null)
+        {
+            await SaveDocumentAsync(_activeDocument, forceSaveAs: true);
+        }
+    }
+
+    private async Task<bool> SaveDocumentAsync(DocumentSession document, bool forceSaveAs)
+    {
+        var targetPath = document.FilePath;
         if (forceSaveAs || targetPath is null)
         {
             var dialog = new SaveFileDialog
@@ -237,22 +284,30 @@ public partial class MainWindow : Window, IDisposable
                 AddExtension = true,
                 FileName = targetPath is null ? "Untitled.md" : Path.GetFileName(targetPath),
             };
-
             if (dialog.ShowDialog(this) != true)
             {
                 return false;
             }
 
             targetPath = dialog.FileName;
+            var duplicate = Documents.FirstOrDefault(candidate =>
+                !ReferenceEquals(candidate, document)
+                && string.Equals(candidate.FilePath, Path.GetFullPath(targetPath), StringComparison.OrdinalIgnoreCase));
+            if (duplicate is not null)
+            {
+                DocumentTabs.SelectedItem = duplicate;
+                MessageBox.Show(this, "That file is already open in another tab.", "File already open",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return false;
+            }
         }
 
         try
         {
-            await _fileService.SaveAsync(targetPath, _markdown, _hasUtf8Bom, _lineEnding);
-            _filePath = Path.GetFullPath(targetPath);
-            _lastSavedMarkdown = _markdown;
-            StatusText.Text = $"Saved {_filePath}";
-            UpdateTitle();
+            await _fileService.SaveAsync(targetPath, document.Markdown, document.HasUtf8Bom, document.LineEnding);
+            document.MarkSaved(targetPath, File.GetLastWriteTimeUtc(targetPath));
+            StatusText.Text = $"Saved {document.FilePath}";
+            UpdateWindowState();
             return true;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
@@ -264,11 +319,14 @@ public partial class MainWindow : Window, IDisposable
 
     private void PrintPreview_Click(object sender, RoutedEventArgs e)
     {
-        var preview = new PrintPreviewWindow(
-            _renderer.RenderDocument(_markdown, _filePath is null ? "Untitled" : Path.GetFileName(_filePath)))
+        if (_activeDocument is null)
         {
-            Owner = this,
-        };
+            return;
+        }
+
+        var preview = new PrintPreviewWindow(
+            _renderer.RenderDocument(_activeDocument.Markdown, _activeDocument.DisplayName))
+        { Owner = this };
         preview.Show();
     }
 
@@ -280,34 +338,74 @@ public partial class MainWindow : Window, IDisposable
 
     private async Task SetModeAsync(string mode, string label)
     {
-        if (mode is "rich" or "split" && _richEditorRisks.Count > 0)
+        if (_activeDocument is null)
         {
-            var riskList = string.Join(", ", _richEditorRisks);
-            var result = MessageBox.Show(
-                this,
-                $"This document contains {riskList}. The formatted editor may normalize or remove that syntax. Continue?",
-                "Unsupported Markdown syntax",
-                MessageBoxButton.OKCancel,
-                MessageBoxImage.Warning);
+            return;
+        }
 
+        if (mode is "rich" or "split" && _activeDocument.RichEditorRisks.Count > 0)
+        {
+            var riskList = string.Join(", ", _activeDocument.RichEditorRisks);
+            var result = MessageBox.Show(this,
+                $"This document contains {riskList}. The formatted editor may normalize or remove that syntax. Continue?",
+                "Unsupported Markdown syntax", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
             if (result != MessageBoxResult.OK)
             {
                 return;
             }
         }
 
-        _editorMode = mode;
+        _activeDocument.EditorMode = mode;
         await SendToEditorAsync(new { type = "mode", mode });
         ModeText.Text = label;
+    }
+
+    private void OpenFolder_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog { Title = "Open folder", Multiselect = false };
+        if (dialog.ShowDialog(this) == true)
+        {
+            SetFolderRoot(dialog.FolderName);
+        }
+    }
+
+    private void SetFolderRoot(string path)
+    {
+        var fullPath = Path.GetFullPath(path);
+        FolderRoots.Clear();
+        FolderRoots.Add(FolderTreeNode.CreateRoot(fullPath));
+        var folderName = Path.GetFileName(fullPath.TrimEnd(Path.DirectorySeparatorChar));
+        FolderNameText.Text = string.IsNullOrEmpty(folderName) ? fullPath : folderName;
+        FolderNameText.ToolTip = fullPath;
+    }
+
+    private void FolderTree_Expanded(object sender, RoutedEventArgs e)
+    {
+        if (e.OriginalSource is TreeViewItem { DataContext: FolderTreeNode node })
+        {
+            node.LoadChildren();
+        }
+    }
+
+    private async void FolderTree_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (FolderTree.SelectedItem is FolderTreeNode { IsDirectory: false, IsPlaceholder: false } node)
+        {
+            await OpenPathAsync(node.FullPath);
+            e.Handled = true;
+        }
     }
 
     private async void Exit_Click(object sender, RoutedEventArgs e) => await ExitApplicationAsync();
 
     private async Task ExitApplicationAsync()
     {
-        if (!await ConfirmReplaceAsync())
+        foreach (var document in Documents.ToArray())
         {
-            return;
+            if (!await ConfirmCloseDocumentAsync(document))
+            {
+                return;
+            }
         }
 
         _allowClose = true;
@@ -316,23 +414,18 @@ public partial class MainWindow : Window, IDisposable
         System.Windows.Application.Current.Shutdown();
     }
 
-    private async Task<bool> ConfirmReplaceAsync()
+    private async Task<bool> ConfirmCloseDocumentAsync(DocumentSession document)
     {
-        if (!IsDirty)
+        if (!document.IsDirty)
         {
             return true;
         }
 
-        var result = MessageBox.Show(
-            this,
-            "Save changes to the current Markdown document?",
-            "Unsaved changes",
-            MessageBoxButton.YesNoCancel,
-            MessageBoxImage.Question);
-
+        var result = MessageBox.Show(this, $"Save changes to {document.DisplayName}?", "Unsaved changes",
+            MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
         return result switch
         {
-            MessageBoxResult.Yes => await SaveAsync(forceSaveAs: false),
+            MessageBoxResult.Yes => await SaveDocumentAsync(document, forceSaveAs: false),
             MessageBoxResult.No => true,
             _ => false,
         };
@@ -347,35 +440,17 @@ public partial class MainWindow : Window, IDisposable
 
         e.Cancel = true;
         Hide();
-        _trayIcon.ShowBalloonTip(
-            1200,
-            "Markdown Editor",
-            "The editor is still running in the system tray.",
+        _trayIcon.ShowBalloonTip(1200, "Markdown Editor", "The editor is still running in the system tray.",
             WinForms.ToolTipIcon.Info);
     }
 
-    private void Window_Drop(object sender, System.Windows.DragEventArgs e)
+    private void Window_Closed(object? sender, EventArgs e) => Dispose();
+
+    private async void Window_Drop(object sender, System.Windows.DragEventArgs e)
     {
-        if (e.Data.GetData(DataFormats.FileDrop) is not string[] paths)
+        if (e.Data.GetData(DataFormats.FileDrop) is string[] paths)
         {
-            return;
-        }
-
-        var markdownPath = paths.FirstOrDefault(path =>
-            string.Equals(Path.GetExtension(path), ".md", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(Path.GetExtension(path), ".markdown", StringComparison.OrdinalIgnoreCase));
-
-        if (markdownPath is not null)
-        {
-            _ = OpenDroppedPathAsync(markdownPath);
-        }
-    }
-
-    private async Task OpenDroppedPathAsync(string path)
-    {
-        if (await ConfirmReplaceAsync())
-        {
-            await OpenPathAsync(path);
+            await OpenPathsAsync(paths);
         }
     }
 
@@ -397,14 +472,29 @@ public partial class MainWindow : Window, IDisposable
         }
 
         Activate();
+        Topmost = true;
+        Topmost = false;
+        Focus();
     }
 
-    private bool IsDirty => !string.Equals(_markdown, _lastSavedMarkdown, StringComparison.Ordinal);
-
-    private void UpdateTitle()
+    private void UpdateWindowState()
     {
-        var name = _filePath is null ? "Untitled" : Path.GetFileName(_filePath);
-        Title = $"{(IsDirty ? "*" : string.Empty)}{name} — Markdown Editor";
+        var document = _activeDocument;
+        Title = document is null ? "Markdown Editor" : $"{document.Header} — Markdown Editor";
+        ModeText.Text = document?.EditorMode switch
+        {
+            "source" => "Source",
+            "split" => "Split",
+            _ => "Rich",
+        };
+        StatusText.Text = document switch
+        {
+            null => "No document open",
+            { RichEditorRisks.Count: > 0, EditorMode: "source" } =>
+                "Source mode preserves syntax outside the formatted editor's compatibility set.",
+            { FilePath: not null } => document.FilePath,
+            _ => "Untitled document",
+        };
     }
 
     public void Dispose()
