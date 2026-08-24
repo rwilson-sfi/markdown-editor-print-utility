@@ -1,12 +1,33 @@
 :root {
   color-scheme: light;
-  font-family: "Segoe UI", system-ui, sans-serif;
-  background: #f5f6f8;
-  color: #1f2937;
+  --app-bg: #f8faff;
+  --surface: #ffffff;
+  --surface-muted: #f2f7ff;
+  --sidebar: #f3f7ff;
+  --text: #17171a;
+  --text-muted: #666678;
+  --border: #c7daff;
+  --accent: #0053fd;
+  --accent-text: #ffffff;
+  --selection: #dde8ff;
+  --code-bg: #f2f7ff;
+  --destructive: #c72e4d;
+  --font-ui: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, monospace;
+  font-family: var(--font-ui);
+  background: var(--app-bg);
+  color: var(--text);
 }
 
 * {
   box-sizing: border-box;
+  scrollbar-color: var(--border) var(--surface-muted);
+  scrollbar-width: thin;
+}
+
+*::selection {
+  color: var(--text);
+  background: var(--selection);
 }
 
 html,
@@ -18,18 +39,24 @@ body,
   overflow: hidden;
 }
 
+body {
+  background: var(--app-bg);
+  color: var(--text);
+}
+
 #workspace {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1px;
-  background: #d7dce3;
+  background: var(--border);
 }
 
 #source-pane,
 #rich-pane {
   min-width: 0;
   min-height: 0;
-  background: #ffffff;
+  color: var(--text);
+  background: var(--surface);
 }
 
 #source-pane {
@@ -38,13 +65,13 @@ body,
 }
 
 #source-pane label {
-  padding: 8px 12px;
-  border-bottom: 1px solid #d7dce3;
-  color: #52606d;
-  font-size: 12px;
-  font-weight: 600;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  font: 600 10px/1.2 var(--font-ui);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.14em;
 }
 
 #source-editor {
@@ -53,11 +80,16 @@ body,
   resize: none;
   border: 0;
   outline: 0;
-  padding: 24px 28px 64px;
-  font: 14px/1.55 "Cascadia Mono", Consolas, monospace;
-  color: #172033;
-  background: #fbfcfe;
+  padding: 34px 42px 96px;
+  color: var(--text);
+  background: var(--surface);
+  caret-color: var(--accent);
+  font: 14px/1.68 var(--font-mono);
   tab-size: 2;
+}
+
+#source-editor:focus {
+  box-shadow: inset 2px 0 0 var(--accent);
 }
 
 #rich-pane {
@@ -67,7 +99,149 @@ body,
 
 #rich-editor {
   min-height: 100%;
-  padding: 12px 28px 64px;
+  background: var(--surface);
+}
+
+#rich-editor .milkdown,
+#rich-editor .milkdown .editor {
+  min-height: 100%;
+  color: var(--text);
+  background: var(--surface);
+}
+
+#rich-editor .milkdown .ProseMirror {
+  width: min(100%, 920px);
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 38px 56px 104px;
+  color: var(--text);
+  background: var(--surface);
+  caret-color: var(--accent);
+  font: 15px/1.7 var(--font-ui);
+  outline: 0;
+}
+
+#rich-editor .milkdown .ProseMirror > *:first-child {
+  margin-top: 0;
+}
+
+#rich-editor .milkdown .ProseMirror h1,
+#rich-editor .milkdown .ProseMirror h2,
+#rich-editor .milkdown .ProseMirror h3,
+#rich-editor .milkdown .ProseMirror h4 {
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+#rich-editor .milkdown .ProseMirror h1 {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 2.1em;
+}
+
+#rich-editor .milkdown .ProseMirror h2 {
+  margin-top: 1.8em;
+  font-size: 1.5em;
+}
+
+#rich-editor .milkdown .ProseMirror a {
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+#rich-editor .milkdown .ProseMirror blockquote {
+  margin-left: 0;
+  padding: 4px 0 4px 18px;
+  border-left: 2px solid var(--accent);
+  color: var(--text-muted);
+}
+
+#rich-editor .milkdown .ProseMirror code {
+  padding: 2px 5px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text);
+  background: var(--code-bg);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+#rich-editor .milkdown .ProseMirror pre {
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text);
+  background: var(--code-bg);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+#rich-editor .milkdown .ProseMirror pre code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+#rich-editor .milkdown .ProseMirror table {
+  border-color: var(--border);
+}
+
+#rich-editor .milkdown .ProseMirror th,
+#rich-editor .milkdown .ProseMirror td {
+  border-color: var(--border);
+}
+
+#rich-editor .milkdown .ProseMirror th {
+  background: var(--surface-muted);
+}
+
+#rich-editor .milkdown .ProseMirror hr {
+  border-color: var(--border);
+}
+
+#rich-editor .milkdown [role="toolbar"],
+#rich-editor .milkdown .milkdown-toolbar,
+#rich-editor .milkdown .crepe-toolbar {
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+  background: var(--surface) !important;
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--app-bg) 72%, transparent) !important;
+}
+
+#rich-editor .milkdown .milkdown-top-bar {
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+  background: var(--surface) !important;
+}
+
+#rich-editor .milkdown .milkdown-top-bar .top-bar-heading-label,
+#rich-editor .milkdown .milkdown-top-bar .top-bar-heading-option {
+  color: var(--text) !important;
+}
+
+#rich-editor .milkdown .milkdown-top-bar .top-bar-chevron svg,
+#rich-editor .milkdown .milkdown-top-bar .top-bar-item svg {
+  color: var(--text-muted) !important;
+  fill: var(--text-muted) !important;
+  stroke: var(--text-muted) !important;
+}
+
+#rich-editor .milkdown .milkdown-top-bar .top-bar-heading-button:hover,
+#rich-editor .milkdown .milkdown-top-bar .top-bar-heading-option:hover,
+#rich-editor .milkdown .milkdown-top-bar .top-bar-item:hover {
+  background: var(--surface-muted) !important;
+}
+
+#rich-editor .milkdown .milkdown-top-bar .top-bar-heading-dropdown {
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: var(--surface) !important;
+}
+
+#rich-editor .milkdown .milkdown-top-bar .top-bar-divider {
+  background: var(--border) !important;
 }
 
 body.mode-source #source-pane {
@@ -95,5 +269,11 @@ body.mode-split #rich-pane {
   body.mode-split #workspace {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 1fr;
+  }
+
+  #rich-editor .milkdown .ProseMirror,
+  #source-editor {
+    padding-left: 26px;
+    padding-right: 26px;
   }
 }

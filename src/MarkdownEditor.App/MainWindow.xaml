@@ -4,77 +4,201 @@
         xmlns:local="clr-namespace:MarkdownEditor.App"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         Title="Markdown Editor"
-        Width="1220"
-        Height="800"
-        MinWidth="820"
-        MinHeight="520"
-        Background="#FFFFFF"
+        Width="1280"
+        Height="820"
+        MinWidth="940"
+        MinHeight="560"
+        Background="{DynamicResource WindowBackgroundBrush}"
         AllowDrop="True"
         Loaded="Window_Loaded"
         Closing="Window_Closing"
         Closed="Window_Closed"
         Drop="Window_Drop">
     <DockPanel LastChildFill="True">
-        <Border DockPanel.Dock="Top" Background="#F3F3F3" BorderBrush="#D0D0D0" BorderThickness="0,0,0,1">
-            <StackPanel Orientation="Horizontal" Margin="6,4">
-                <Button Content="New" Click="New_Click" ToolTip="Create a new Markdown document" />
-                <Button Content="Open…" Click="Open_Click" ToolTip="Open one or more Markdown documents" />
-                <Button Content="Open Folder…" Click="OpenFolder_Click" ToolTip="Choose a folder for the Explorer pane" />
-                <Button Content="Save" Click="Save_Click" ToolTip="Save the active document" />
-                <Button Content="Save As…" Click="SaveAs_Click" ToolTip="Save the active document to another file" />
-                <Separator Margin="7,3" />
-                <Button Content="Print Preview" Click="PrintPreview_Click" MinWidth="96" />
-                <Separator Margin="7,3" />
-                <TextBlock Text="View:" VerticalAlignment="Center" Margin="4,0,6,0" />
-                <Button Content="Rich" Click="RichMode_Click" />
-                <Button Content="Source" Click="SourceMode_Click" />
-                <Button Content="Split" Click="SplitMode_Click" />
-                <Separator Margin="7,3" />
-                <Button Content="Exit" Click="Exit_Click" />
-            </StackPanel>
+        <Border DockPanel.Dock="Top"
+                Height="58"
+                Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1">
+            <Grid Margin="12,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="196" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="32" Height="32" Background="{DynamicResource AccentBrush}" CornerRadius="2">
+                        <TextBlock Text="M/D" Foreground="{DynamicResource AccentTextBrush}"
+                                   FontFamily="Cascadia Mono, Consolas" FontSize="11" FontWeight="Bold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="MARKDOWN" FontSize="12" FontWeight="Bold" />
+                        <TextBlock Text="D E S K  U T I L I T Y" FontSize="8" Foreground="{DynamicResource TextSecondaryBrush}"
+                                   Margin="0,2,0,0" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="NEW" Click="New_Click" ToolTip="Create a new Markdown document"
+                            AutomationProperties.Name="New document" />
+                    <Button Content="OPEN" Click="Open_Click" ToolTip="Open one or more Markdown documents"
+                            AutomationProperties.Name="Open documents" />
+                    <Button Content="FOLDER" Click="OpenFolder_Click" ToolTip="Choose an Explorer folder"
+                            AutomationProperties.Name="Open folder" />
+                    <Button Content="SAVE" Click="Save_Click" ToolTip="Save the active document" />
+                    <Button Content="SAVE AS" Click="SaveAs_Click" ToolTip="Save the active document with another name" />
+                    <Separator />
+                    <Button Content="PRINT" Click="PrintPreview_Click" ToolTip="Open formatted print preview" />
+                    <Separator />
+                    <RadioButton x:Name="RichModeButton" GroupName="EditorMode" Content="RICH"
+                                 Style="{StaticResource ModeToggleStyle}" Click="RichMode_Click"
+                                 ToolTip="Formatted editing mode" />
+                    <RadioButton x:Name="SourceModeButton" GroupName="EditorMode" Content="SOURCE"
+                                 Style="{StaticResource ModeToggleStyle}" Click="SourceMode_Click"
+                                 ToolTip="Markdown source mode" />
+                    <RadioButton x:Name="SplitModeButton" GroupName="EditorMode" Content="SPLIT"
+                                 Style="{StaticResource LastModeToggleStyle}" Click="SplitMode_Click"
+                                 ToolTip="Source and formatted editing side by side" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="ThemeButton" Style="{StaticResource CommandButtonStyle}"
+                            Click="ThemeButton_Click" ToolTip="Choose interface theme"
+                            AutomationProperties.Name="Choose interface theme">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentBrush}" Margin="0,0,7,0" />
+                            <TextBlock x:Name="ThemeButtonText" Text="THEME / NOUS" FontSize="10"
+                                       FontWeight="SemiBold" VerticalAlignment="Center" />
+                            <TextBlock Text="⌄" Margin="7,-2,0,0" FontSize="12" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <Button.ContextMenu>
+                            <ContextMenu x:Name="ThemeMenu" Placement="Bottom">
+                                <MenuItem x:Name="NousThemeItem" Tag="nous" Click="ThemeMenuItem_Click" IsCheckable="True">
+                                    <MenuItem.Header>
+                                        <StackPanel>
+                                            <TextBlock Text="NOUS" FontWeight="SemiBold" />
+                                            <TextBlock Text="Paper neutral / canonical blue" FontSize="10"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}" />
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem x:Name="MidnightThemeItem" Tag="midnight" Click="ThemeMenuItem_Click" IsCheckable="True">
+                                    <MenuItem.Header>
+                                        <StackPanel>
+                                            <TextBlock Text="MIDNIGHT" FontWeight="SemiBold" />
+                                            <TextBlock Text="Deep blue-violet / cool lavender" FontSize="10"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}" />
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem x:Name="EmberThemeItem" Tag="ember" Click="ThemeMenuItem_Click" IsCheckable="True">
+                                    <MenuItem.Header>
+                                        <StackPanel>
+                                            <TextBlock Text="EMBER" FontWeight="SemiBold" />
+                                            <TextBlock Text="Warm crimson / forged bronze" FontSize="10"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}" />
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem x:Name="MonoThemeItem" Tag="mono" Click="ThemeMenuItem_Click" IsCheckable="True">
+                                    <MenuItem.Header>
+                                        <StackPanel>
+                                            <TextBlock Text="MONO" FontWeight="SemiBold" />
+                                            <TextBlock Text="Compact grayscale / pure focus" FontSize="10"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}" />
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem x:Name="CyberpunkThemeItem" Tag="cyberpunk" Click="ThemeMenuItem_Click" IsCheckable="True">
+                                    <MenuItem.Header>
+                                        <StackPanel>
+                                            <TextBlock Text="CYBERPUNK" FontWeight="SemiBold" />
+                                            <TextBlock Text="Neon green / terminal black" FontSize="10"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}" />
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    <Button Content="×" Style="{StaticResource GhostButtonStyle}" Click="Exit_Click"
+                            Margin="5,0,0,0" ToolTip="Exit Markdown Desk" FontSize="18"
+                            AutomationProperties.Name="Exit application" />
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <StatusBar DockPanel.Dock="Bottom" Background="#007ACC" Foreground="White" BorderThickness="0">
-            <StatusBarItem Foreground="White">
-                <TextBlock x:Name="StatusText" Text="Starting editor…" TextTrimming="CharacterEllipsis" />
-            </StatusBarItem>
-            <Separator Background="#A8D8F0" />
-            <StatusBarItem HorizontalAlignment="Right" Foreground="White">
-                <TextBlock x:Name="ModeText" Text="Rich" />
-            </StatusBarItem>
-        </StatusBar>
+        <Border DockPanel.Dock="Bottom" Height="28"
+                Background="{DynamicResource SurfaceMutedBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0">
+            <Grid Margin="10,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse Width="6" Height="6" Fill="{DynamicResource AccentBrush}" Margin="0,0,7,0" />
+                    <TextBlock x:Name="StatusText" Text="Starting editor…" FontSize="10"
+                               Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <TextBlock x:Name="ThemeStatusText" Grid.Column="1" Text="NOUS" FontSize="9"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           VerticalAlignment="Center" Margin="12,0" />
+                <Border Grid.Column="2" Background="{DynamicResource AccentBrush}" Padding="9,3" Margin="0,3,0,3">
+                    <TextBlock x:Name="ModeText" Text="RICH" FontSize="9" FontWeight="Bold"
+                               Foreground="{DynamicResource AccentTextBrush}" VerticalAlignment="Center" />
+                </Border>
+            </Grid>
+        </Border>
 
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250" MinWidth="150" />
-                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="264" MinWidth="176" />
+                <ColumnDefinition Width="1" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="#F3F3F3" BorderBrush="#D0D0D0" BorderThickness="0,0,1,0">
+            <Border Grid.Column="0" Background="{DynamicResource SidebarBrush}">
                 <DockPanel>
-                    <Grid DockPanel.Dock="Top" Margin="10,8,8,6">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="EXPLORER" FontSize="11" FontWeight="SemiBold" Foreground="#4A4A4A" VerticalAlignment="Center" />
-                        <Button Grid.Column="1" Content="…" Click="OpenFolder_Click" ToolTip="Open folder"
-                                Padding="4,0" Margin="2,0" MinWidth="24" Height="22" />
-                    </Grid>
-                    <TextBlock x:Name="FolderNameText" DockPanel.Dock="Top" Text="NO FOLDER OPEN"
-                               FontWeight="SemiBold" FontSize="12" Margin="10,4,6,7" TextTrimming="CharacterEllipsis" />
+                    <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource SidebarBorderBrush}"
+                            BorderThickness="0,0,0,1" Padding="14,13,10,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="P R O J E C T  /  E X P L O R E R" FontSize="8" FontWeight="Bold"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="FolderNameText" Text="NO FOLDER OPEN" FontSize="12"
+                                           FontWeight="SemiBold" Margin="0,7,0,0" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="+" Click="OpenFolder_Click"
+                                    Style="{StaticResource GhostButtonStyle}" Width="28" Height="28"
+                                    ToolTip="Open folder" FontSize="17" />
+                        </Grid>
+                    </Border>
+
                     <TreeView x:Name="FolderTree" ItemsSource="{Binding FolderRoots}"
-                              Background="Transparent" BorderThickness="0" Padding="3"
-                              TreeViewItem.Expanded="FolderTree_Expanded" MouseDoubleClick="FolderTree_MouseDoubleClick">
+                              Background="Transparent" BorderThickness="0" Padding="8,7"
+                              Foreground="{DynamicResource TextPrimaryBrush}"
+                              TreeViewItem.Expanded="FolderTree_Expanded"
+                              MouseDoubleClick="FolderTree_MouseDoubleClick">
+                        <TreeView.ItemContainerStyle>
+                            <StaticResource ResourceKey="ExplorerTreeItemStyle" />
+                        </TreeView.ItemContainerStyle>
                         <TreeView.Resources>
-                            <Style TargetType="TreeViewItem">
-                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=OneWay}" />
-                            </Style>
                             <HierarchicalDataTemplate DataType="{x:Type local:FolderTreeNode}" ItemsSource="{Binding Children}">
-                                <StackPanel Orientation="Horizontal" Margin="1,2">
-                                    <TextBlock Text="{Binding Icon}" Width="16" Foreground="#6A6A6A" />
-                                    <TextBlock Text="{Binding Name}" Foreground="#252526" />
+                                <StackPanel Orientation="Horizontal" Margin="0,1">
+                                    <TextBlock Text="{Binding Icon}" Width="18" FontFamily="Cascadia Mono, Consolas"
+                                               FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Name}" FontSize="12" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextPrimaryBrush}" />
                                 </StackPanel>
                             </HierarchicalDataTemplate>
                         </TreeView.Resources>
@@ -82,40 +206,50 @@
                 </DockPanel>
             </Border>
 
-            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="#E5E5E5"
+            <GridSplitter Grid.Column="1" Width="1" HorizontalAlignment="Stretch"
+                          Background="{DynamicResource SidebarBorderBrush}"
                           ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" />
 
-            <Grid Grid.Column="2">
+            <Grid Grid.Column="2" Background="{DynamicResource SurfaceBrush}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="38" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
                 <TabControl x:Name="DocumentTabs" Grid.Row="0" ItemsSource="{Binding Documents}"
-                            SelectionChanged="DocumentTabs_SelectionChanged" Background="#ECECEC"
-                            BorderBrush="#D0D0D0" BorderThickness="0,0,0,1" Padding="0">
+                            SelectionChanged="DocumentTabs_SelectionChanged"
+                            Background="{DynamicResource SurfaceMutedBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="0,0,0,1"
+                            ItemContainerStyle="{StaticResource DocumentTabItemStyle}"
+                            Padding="0">
                     <TabControl.Template>
-                        <ControlTemplate TargetType="TabControl">
+                        <ControlTemplate TargetType="{x:Type TabControl}">
                             <Border Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}">
-                                <TabPanel IsItemsHost="True" />
+                                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                                    <TabPanel IsItemsHost="True" />
+                                </ScrollViewer>
                             </Border>
                         </ControlTemplate>
                     </TabControl.Template>
                     <TabControl.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" MinWidth="100">
-                                <TextBlock Text="{Binding Header}" VerticalAlignment="Center" Margin="4,0,8,0" />
-                                <Button Content="×" Tag="{Binding}" Click="CloseTab_Click" ToolTip="Close"
-                                        Padding="2,0" Margin="0" MinWidth="20" Width="20" Height="20"
-                                        Background="Transparent" BorderThickness="0" FontSize="14" />
+                            <StackPanel Orientation="Horizontal" MinWidth="112">
+                                <TextBlock Text="{Binding Header}" VerticalAlignment="Center" Margin="0,0,10,0"
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}" />
+                                <Button Content="×" Tag="{Binding}" Click="CloseTab_Click" ToolTip="Close document"
+                                        Style="{StaticResource GhostButtonStyle}" Padding="1,0" Margin="0"
+                                        MinWidth="18" Width="18" Height="18" FontSize="13" />
                             </StackPanel>
                         </DataTemplate>
                     </TabControl.ItemTemplate>
                 </TabControl>
 
-                <wv2:WebView2 x:Name="EditorWebView" Grid.Row="1" DefaultBackgroundColor="White" />
+                <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}">
+                    <wv2:WebView2 x:Name="EditorWebView" DefaultBackgroundColor="White" />
+                </Border>
             </Grid>
         </Grid>
     </DockPanel>

@@ -38,7 +38,7 @@ public sealed class FolderTreeNode
 
     public string Icon => IsDirectory ? "▸" : "#";
 
-    public bool IsExpanded { get; private set; }
+    public bool IsExpanded { get; set; }
 
     public ObservableCollection<FolderTreeNode> Children { get; } = [];
 

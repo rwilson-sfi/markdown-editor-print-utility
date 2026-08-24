@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using MarkdownEditor.Core.Documents;
+using MarkdownEditor.Core.Theming;
 using Microsoft.Web.WebView2.Core;
 using DataFormats = System.Windows.DataFormats;
 using MessageBox = System.Windows.MessageBox;
@@ -22,6 +23,8 @@ public partial class MainWindow : Window, IDisposable
     private readonly MarkdownRenderer _renderer = new();
     private readonly IReadOnlyList<string> _initialPaths;
     private readonly WinForms.NotifyIcon _trayIcon;
+    private readonly ThemeManager _themeManager = new();
+    private ThemeDefinition _activeTheme;
     private DocumentSession? _activeDocument;
     private bool _editorReady;
     private bool _allowClose;
@@ -30,6 +33,7 @@ public partial class MainWindow : Window, IDisposable
     public MainWindow(IReadOnlyList<string>? initialPaths = null)
     {
         _initialPaths = initialPaths ?? [];
+        _activeTheme = _themeManager.ApplySavedTheme();
         InitializeComponent();
         DataContext = this;
         _trayIcon = new WinForms.NotifyIcon
@@ -40,6 +44,7 @@ public partial class MainWindow : Window, IDisposable
             ContextMenuStrip = BuildTrayMenu(),
         };
         _trayIcon.DoubleClick += (_, _) => Dispatcher.Invoke(RestoreWindow);
+        UpdateThemeVisualState();
         UpdateWindowState();
     }
 
@@ -120,6 +125,7 @@ public partial class MainWindow : Window, IDisposable
         {
             case "ready":
                 _editorReady = true;
+                await SendThemeToEditorAsync();
                 await LoadActiveDocumentAsync();
                 break;
             case "changed" when root.TryGetProperty("markdown", out var markdownProperty):
@@ -146,6 +152,29 @@ public partial class MainWindow : Window, IDisposable
 
         return Task.CompletedTask;
     }
+
+    private Task SendThemeToEditorAsync() => SendToEditorAsync(new
+    {
+        type = "theme",
+        theme = new
+        {
+            id = _activeTheme.Id,
+            isDark = _activeTheme.IsDark,
+            monospaceInterface = _activeTheme.MonospaceInterface,
+            background = _activeTheme.Background,
+            surface = _activeTheme.Card,
+            muted = _activeTheme.Muted,
+            foreground = _activeTheme.Foreground,
+            mutedForeground = _activeTheme.MutedForeground,
+            border = _activeTheme.Border,
+            accent = _activeTheme.Ring,
+            accentForeground = _activeTheme.RingForeground,
+            selection = _activeTheme.Selection,
+            sidebar = _activeTheme.SidebarBackground,
+            code = _activeTheme.Muted,
+            destructive = _activeTheme.Destructive,
+        },
+    });
 
     private void New_Click(object sender, RoutedEventArgs e) => CreateUntitledDocument();
 
@@ -357,7 +386,40 @@ public partial class MainWindow : Window, IDisposable
 
         _activeDocument.EditorMode = mode;
         await SendToEditorAsync(new { type = "mode", mode });
-        ModeText.Text = label;
+        ModeText.Text = label.ToUpperInvariant();
+        UpdateWindowState();
+    }
+
+    private void ThemeButton_Click(object sender, RoutedEventArgs e)
+    {
+        ThemeMenu.PlacementTarget = ThemeButton;
+        ThemeMenu.IsOpen = true;
+    }
+
+    private async void ThemeMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.MenuItem { Tag: string themeId })
+        {
+            return;
+        }
+
+        _activeTheme = _themeManager.Apply(themeId);
+        UpdateThemeVisualState();
+        await SendThemeToEditorAsync();
+        StatusText.Text = $"Theme changed to {_activeTheme.DisplayName}.";
+    }
+
+    private void UpdateThemeVisualState()
+    {
+        var themeLabel = _activeTheme.DisplayName.ToUpperInvariant();
+        ThemeButtonText.Text = $"THEME / {themeLabel}";
+        ThemeStatusText.Text = themeLabel;
+        NousThemeItem.IsChecked = _activeTheme.Id == "nous";
+        MidnightThemeItem.IsChecked = _activeTheme.Id == "midnight";
+        EmberThemeItem.IsChecked = _activeTheme.Id == "ember";
+        MonoThemeItem.IsChecked = _activeTheme.Id == "mono";
+        CyberpunkThemeItem.IsChecked = _activeTheme.Id == "cyberpunk";
+        EditorWebView.DefaultBackgroundColor = System.Drawing.ColorTranslator.FromHtml(_activeTheme.Background);
     }
 
     private void OpenFolder_Click(object sender, RoutedEventArgs e)
@@ -481,12 +543,16 @@ public partial class MainWindow : Window, IDisposable
     {
         var document = _activeDocument;
         Title = document is null ? "Markdown Editor" : $"{document.Header} — Markdown Editor";
-        ModeText.Text = document?.EditorMode switch
+        var editorMode = document?.EditorMode ?? "rich";
+        ModeText.Text = editorMode switch
         {
-            "source" => "Source",
-            "split" => "Split",
-            _ => "Rich",
+            "source" => "SOURCE",
+            "split" => "SPLIT",
+            _ => "RICH",
         };
+        RichModeButton.IsChecked = editorMode == "rich";
+        SourceModeButton.IsChecked = editorMode == "source";
+        SplitModeButton.IsChecked = editorMode == "split";
         StatusText.Text = document switch
         {
             null => "No document open",
