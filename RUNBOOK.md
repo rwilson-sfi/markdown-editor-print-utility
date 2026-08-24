@@ -55,7 +55,8 @@ Produce and verify a runnable development build with the bundled local editor su
 #### Preconditions
 
 - Windows 11 x64 with the .NET 10 SDK, Node.js 24 or newer, npm, and Evergreen WebView2 Runtime.
-- Run from the project root.
+- On `SFI-P14-2255`, run from the user-approved development worktree at
+  `C:\SFM\Dev\MarkdownEditor`.
 - No installation, registry, startup, or file-association change is performed by this procedure.
 
 #### Steps
@@ -76,7 +77,7 @@ tray icon and local rich editor. Closing the window leaves the process in the tr
 #### Verification
 
 - `src/MarkdownEditor.App/bin/Debug/net10.0-windows/EditorAssets/index.html` exists.
-- The test output reports eight passing tests or more.
+- The test output reports 13 passing tests or more.
 - The launched process is responsive and starts WebView2 child processes.
 
 #### Recovery or rollback
@@ -84,5 +85,11 @@ tray icon and local rich editor. Closing the window leaves the process in the tr
 Delete only the generated `bin/`, `obj/`, `web/editor/dist/`, and `web/editor/node_modules/`
 directories if a clean dependency rebuild is needed. They are ignored and regenerated from tracked
 project files and lockfiles. Do not delete source, project records, or the package lock.
+
+If Windows reports `FileLoadException: Access is denied` under `C:\AI-Workspace` or a temp location,
+stop that launch and preserve the exact evidence. On `SFI-P14-2255`, perform the build and runtime
+checks from `C:\SFM\Dev\MarkdownEditor`, which is the user-approved development worktree and has
+been validated successfully. Do not disable or bypass application-control or endpoint-security
+policy.
 
 No installation, shell-registration, or release procedure has been validated yet.

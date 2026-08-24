@@ -47,6 +47,8 @@ environment.
 ## Important locations
 
 - Shared project root: `.`
+- Active Windows development/build worktree on `SFI-P14-2255`:
+  `C:\SFM\Dev\MarkdownEditor`
 - Source repository: independent local Git repository with baseline `main` and current
   `host/sfi-p14-2255`; no remote configured.
 - Target platform: Windows; supported versions and packaging remain design decisions.
@@ -70,6 +72,8 @@ packaging, and signing remain in later phases.
 ## Developer quick start
 
 Prerequisites are the .NET 10 SDK, Node.js 24 or newer, npm, and the Evergreen WebView2 Runtime.
+On `SFI-P14-2255`, run these commands from `C:\SFM\Dev\MarkdownEditor`, the user-approved
+development worktree.
 
 ```powershell
 dotnet restore .\MarkdownEditor.slnx --configfile .\NuGet.config

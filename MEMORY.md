@@ -37,6 +37,16 @@ Curated durable knowledge shared across assistants and machines. Do not store cr
   unsupported-syntax source-mode guard. Eight core tests pass; the local editor bundle builds from
   its lockfile; NuGet and npm high-severity vulnerability checks found none. This is a development
   milestone, not the signed version-one release.
+- **2026-08-24 — Folder Explorer, tabs, and single-instance behavior requested and implemented.** The
+  user wants a VS Code/Codex-style left folder tree, one shared editor experience across multiple
+  file tabs, and exactly one tray process. Commit `9490b66` implements lazy folder navigation,
+  per-document tab state, duplicate-path focus, a per-user mutex, and a current-user named pipe that
+  forwards later open requests to the primary window. The commit is runtime-accepted: 13 automated
+  tests passed, a second process forwarded its file and exited with code zero while exactly one app
+  process remained, and visual QA confirmed the Explorer and multi-tab layout.
+- **2026-08-24 — Use `C:\SFM\Dev\MarkdownEditor` for Windows development on `SFI-P14-2255`.** The
+  user directed that development use `C:\SFM\Dev\`. A dedicated Git worktree preserves the
+  governed repository while providing the host-approved build and execution location.
 
 ## Constraints
 
@@ -52,9 +62,13 @@ Curated durable knowledge shared across assistants and machines. Do not store cr
 - The restricted host blocks the xUnit analyzer DLL in the user NuGet cache. Declaring
   `xunit.analyzers` directly with all assets excluded preserves compilation and test execution while
   avoiding that host-specific load failure.
+- At approximately 18:00 ET on 2026-08-24, managed `C:\AI-Workspace` and temp locations denied fresh
+  unsigned project and test DLLs with `FileLoadException: Access is denied`. The user-directed
+  `C:\SFM\Dev\MarkdownEditor` worktree restored normal build, test, and app execution without
+  changing security policy. Use that worktree on this host and do not weaken endpoint controls.
 
 ## Items requiring revalidation
 
-- Validate multi-document editing, recovery, external-change handling, single-instance forwarding,
-  relative local images, print customization, Explorer verbs, startup registration, packaging,
-  signing, uninstall, and physical-printer output in their planned phases.
+- Validate recovery, external-change handling, recent files, relative local images, print
+  customization, Explorer verbs, startup registration, packaging, signing, uninstall, and
+  physical-printer output in their planned phases.

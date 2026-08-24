@@ -24,15 +24,15 @@ Exit evidence:
 ## Phase 2 — Multi-document and resilience
 
 Progress on 2026-08-24: multi-document tabs, lazy folder Explorer, duplicate-path focus, and
-single-instance file forwarding are implemented. Runtime acceptance is pending because the current
-host began denying execution of all freshly built unsigned .NET assemblies after compilation.
+single-instance file forwarding are implemented and runtime-accepted from the user-approved
+`C:\SFM\Dev\MarkdownEditor` worktree. Thirteen automated tests pass, and a real second invocation
+forwarded its file to the responsive primary process before exiting with code zero.
 
 - Add tabbed documents, recent files, drag/drop, and duplicate-path focus. **Tabs, drag/drop, and
   duplicate-path focus implemented; recent files remain.**
 - Add external-change detection and conflict prompts.
 - Add recovery drafts and abnormal-exit restoration.
-- Add single-instance mutex and named-pipe command forwarding. **Implemented; runtime acceptance
-  remains pending.**
+- Add single-instance mutex and named-pipe command forwarding. **Implemented and runtime-accepted.**
 - Complete keyboard/accessibility review.
 
 Exit evidence:
