@@ -77,7 +77,7 @@ tray icon and local rich editor. Closing the window leaves the process in the tr
 #### Verification
 
 - `src/MarkdownEditor.App/bin/Debug/net10.0-windows/EditorAssets/index.html` exists.
-- The test output reports 13 passing tests or more.
+- The test output reports 16 passing tests or more.
 - The launched process is responsive and starts WebView2 child processes.
 
 #### Recovery or rollback
@@ -91,5 +91,49 @@ stop that launch and preserve the exact evidence. On `SFI-P14-2255`, perform the
 checks from `C:\SFM\Dev\MarkdownEditor`, which is the user-approved development worktree and has
 been validated successfully. Do not disable or bypass application-control or endpoint-security
 policy.
+
+### Theme visual acceptance
+
+#### Purpose
+
+Verify that every screen palette is coherent across the native Windows chrome and embedded editor,
+persists across launches, and does not alter printable output.
+
+#### Preconditions
+
+- Complete the validated development build procedure from `C:\SFM\Dev\MarkdownEditor`.
+- Use a disposable or saved test document with representative headings, lists, code, and tables.
+
+#### Steps
+
+1. Start the development app and open the theme selector in the command bar.
+2. Select Nous, Midnight, Ember, Mono, and Cyberpunk in turn.
+3. For each palette, inspect the command bar, Explorer, tabs, status area, editor toolbar, and rich,
+   source, and split modes.
+4. Open print preview and verify that the preview chrome follows the screen palette while the
+   printable page stays light.
+5. Select a non-default palette, exit the app, relaunch it, and confirm that the selection persists.
+6. Return to the intended palette and exit the exact development app process after acceptance.
+
+#### Expected result
+
+All five palettes remain legible and visually coherent across native and embedded surfaces. The
+selected palette survives relaunch, no runtime network resource is needed, and the printable page is
+not recolored.
+
+#### Verification
+
+- The theme selector exposes exactly Nous, Midnight, Ember, Mono, and Cyberpunk.
+- Each palette updates the editor toolbar and editing surface as well as the native application
+  chrome.
+- Rich, source, and split modes remain usable in every palette.
+- Print preview retains a white document page.
+- Relaunch restores the last selected palette from the local application profile.
+
+#### Recovery or rollback
+
+Select Nous from the theme menu. If the preferences file is unavailable or invalid, the app falls
+back to Nous without blocking startup. Do not delete document files while troubleshooting optional
+appearance settings.
 
 No installation, shell-registration, or release procedure has been validated yet.

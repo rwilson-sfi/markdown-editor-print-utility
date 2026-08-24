@@ -47,6 +47,12 @@ Curated durable knowledge shared across assistants and machines. Do not store cr
 - **2026-08-24 — Use `C:\SFM\Dev\MarkdownEditor` for Windows development on `SFI-P14-2255`.** The
   user directed that development use `C:\SFM\Dev\`. A dedicated Git worktree preserves the
   governed repository while providing the host-approved build and execution location.
+- **2026-08-24 — Hermes-inspired five-theme interface adopted and verified.** Commit `af6ccba`
+  implements a compact retro-minimal visual system informed by Hermes Desktop's data-driven palette
+  approach. Nous, Midnight, Ember, Mono, and Cyberpunk apply to the WPF chrome and rich/source/split
+  editor, use only bundled or system resources, and persist locally under the current user's
+  application profile. Preview chrome follows the screen theme, while the printable page remains
+  light. Sixteen automated tests and visual acceptance across every theme and editor mode passed.
 
 ## Constraints
 

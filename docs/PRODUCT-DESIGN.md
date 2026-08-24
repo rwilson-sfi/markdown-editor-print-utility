@@ -117,8 +117,20 @@ rendering contract. Their source must still be preserved.
 ### 12. Version-one boundary
 
 Version one provides local editing, formatted printing, and PDF export through the Windows print
-workflow. It does not include folder browsing, cross-file search, templates, cloud synchronization,
-collaboration, user accounts, or network services.
+workflow. It does not include cross-file search, templates, cloud synchronization, collaboration,
+user accounts, or network services.
+
+### 13. Appearance and themes
+
+- The interface uses a clean retro-minimal visual system inspired by Hermes Desktop, with compact
+  controls, crisp borders, restrained depth, and a code-oriented document workspace.
+- Five screen palettes are available: **Nous**, **Midnight**, **Ember**, **Mono**, and
+  **Cyberpunk**.
+- A palette applies consistently to the Windows chrome, Explorer, tabs, status area, editor toolbar,
+  and rich/source/split editing surface. Print-preview chrome follows the selected palette.
+- The selected palette persists locally in the current user's Windows profile and requires no
+  account, synchronization, web font, or runtime network access.
+- Screen themes do not alter the light printable page or the saved Markdown document.
 
 ## Primary user flows
 
@@ -143,6 +155,13 @@ collaboration, user accounts, or network services.
 2. Review detected recovery drafts and their source paths/timestamps.
 3. Restore or discard each draft explicitly.
 
+### Choose an appearance
+
+1. Open the theme selector in the command bar.
+2. Choose Nous, Midnight, Ember, Mono, or Cyberpunk.
+3. Continue editing with the palette applied across the application and editor.
+4. Relaunch the utility and retain the selected palette without changing printed output.
+
 ## Quality and safety requirements
 
 - Shell and startup integration is per-user, reversible, and testable without administrator access.
@@ -153,18 +172,18 @@ collaboration, user accounts, or network services.
 - No credentials, telemetry identifiers, or document contents leave the computer.
 - Keyboard access, focus visibility, readable contrast, and standard Windows scaling are part of the
   version-one acceptance criteria.
+- Each screen palette must remain coherent across rich, source, and split editing and preserve a
+  light, readable printable page.
 
-## Remaining technical design decisions
+## Remaining release design decisions
 
-The product behavior is approved. The implementation design must still select and validate:
+The product behavior and core application architecture are approved. Release work must still select
+or validate:
 
-- Supported Windows versions
-- Desktop UI/runtime stack and rich-editor component
-- Markdown parser/renderer and syntax-highlighting component
-- Print-preview and PDF/printing pipeline
 - Per-user installer technology and code-signing process
 - Exact registry mechanism for modern and classic Explorer context menus
 - Recovery-draft storage format and retention policy
+- Physical-printer output and full supported-Markdown acceptance fixtures
 
 These choices must be tested against the approved behavior, especially Markdown round-trip fidelity,
 printing, accessibility, offline operation, and reversible shell integration.

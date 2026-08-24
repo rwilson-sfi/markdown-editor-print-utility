@@ -25,14 +25,19 @@ Exit evidence:
 
 Progress on 2026-08-24: multi-document tabs, lazy folder Explorer, duplicate-path focus, and
 single-instance file forwarding are implemented and runtime-accepted from the user-approved
-`C:\SFM\Dev\MarkdownEditor` worktree. Thirteen automated tests pass, and a real second invocation
-forwarded its file to the responsive primary process before exiting with code zero.
+`C:\SFM\Dev\MarkdownEditor` worktree. A Hermes-inspired retro-minimal interface and five persisted
+screen themes—Nous, Midnight, Ember, Mono, and Cyberpunk—are also implemented across the WPF chrome,
+editor, and preview chrome. Sixteen automated tests pass, and a real second invocation forwarded its
+file to the responsive primary process before exiting with code zero. Visual acceptance covered all
+five palettes, rich/source/split modes, print preview, and relaunch persistence.
 
 - Add tabbed documents, recent files, drag/drop, and duplicate-path focus. **Tabs, drag/drop, and
   duplicate-path focus implemented; recent files remain.**
 - Add external-change detection and conflict prompts.
 - Add recovery drafts and abnormal-exit restoration.
 - Add single-instance mutex and named-pipe command forwarding. **Implemented and runtime-accepted.**
+- Add a coherent modern interface and locally persisted screen themes. **Five-theme system
+  implemented and visually accepted.**
 - Complete keyboard/accessibility review.
 
 Exit evidence:

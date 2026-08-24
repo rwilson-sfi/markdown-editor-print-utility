@@ -1,28 +1,30 @@
 # Project Status
 
 - Status: Active
-- Updated: 2026-08-24 18:15 ET
+- Updated: 2026-08-24 18:34 ET
 - Current service: Codex / GPT-5
 - Current host: SFI-P14-2255
 - Repository boundary: Independent local repository; active development worktree at
   `C:\SFM\Dev\MarkdownEditor`
 - Branch: `host/sfi-p14-2255`
-- Last runtime-verified implementation commit: `9490b668452c8699b2060c1bb64b1295aa3150a1`
+- Last runtime-verified implementation commit: `af6ccba0d39c7d6b0721b1b8e99f03a0cf227992`
 - Working-tree state: Clean at closeout
 
 ## Current state
 
-The current source adds a VS Code-style folder Explorer, closeable multi-document tabs, per-tab editor
-mode and dirty state, duplicate-path tab focus, multi-file open/drop, and per-user single-instance
-coordination. Later launches send Markdown paths over a current-user named pipe to the mutex-owning
-primary process, which restores its window and opens or focuses the corresponding tabs. Editor bridge
-messages include a document ID so delayed updates cannot land in the wrong tab.
+The current source provides a VS Code-style folder Explorer, closeable multi-document tabs, per-tab
+editor mode and dirty state, duplicate-path tab focus, multi-file open/drop, and per-user
+single-instance coordination. It now adds a compact Hermes-inspired interface with five screen
+palettes—Nous, Midnight, Ember, Mono, and Cyberpunk—applied consistently across the WPF chrome,
+editor, and preview chrome. The selected palette persists locally in the user's application profile;
+the printable page remains light and document content is unchanged.
 
-Commit `9490b66` builds successfully with zero compiler warnings or errors and passes formatting
-verification. From `C:\SFM\Dev\MarkdownEditor`, all 13 automated tests passed. A real two-process
-smoke left exactly one app process: the second process exited with code zero and the primary title
-changed to the forwarded file. Visual inspection confirmed the left folder Explorer, multiple tabs,
-active-file focus, and rendered Markdown. No remote is configured.
+Commit `af6ccba` builds successfully with zero compiler warnings or errors and passes formatting
+verification. From `C:\SFM\Dev\MarkdownEditor`, all 16 automated tests passed. Visual inspection
+confirmed all five palettes, rich/source/split editing, print preview, theme persistence after
+relaunch, accessible control names, and the light printable page. The inspection also identified and
+resolved inconsistent dark editor-toolbar and menu-gutter styling. The earlier real two-process
+single-instance acceptance remains valid. No remote is configured.
 
 ## Next action
 
@@ -44,8 +46,8 @@ phase-two accessibility review.
 ## Handoff notes
 
 The product behavior and technical architecture are approved and recorded. The current code is a
-runtime-verified development milestone, not a release. Folder navigation, tabs, and the single-instance
-transport are accepted from `C:\SFM\Dev\MarkdownEditor`. It does not yet install Explorer verbs,
-startup behavior, or a signed package. Continue from
+runtime-verified development milestone, not a release. Folder navigation, tabs, single-instance
+transport, and the five-theme interface are accepted from `C:\SFM\Dev\MarkdownEditor`. It does not
+yet install Explorer verbs, startup behavior, or a signed package. Continue from
 [docs/IMPLEMENTATION-PLAN.md](docs/IMPLEMENTATION-PLAN.md). The local repository has no remote; do
 not add one or publish without explicit destination approval.

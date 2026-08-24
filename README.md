@@ -66,6 +66,12 @@ from later launches into the existing window, so an Explorer Open command does n
 tray instance. Documents containing known out-of-contract syntax open in source mode so a rich-editor
 round trip cannot silently normalize them.
 
+The application chrome now uses a compact, retro-minimal visual system inspired by Hermes Desktop.
+The theme selector applies one of five locally bundled palettes—Nous, Midnight, Ember, Mono, or
+Cyberpunk—to the Windows chrome and the rich/source/split editor. The selected palette persists in
+the current user's local application profile. Print-preview chrome follows the screen theme while the
+printable document remains light for predictable office output.
+
 Crash recovery, external-change detection, recent files, Explorer registration, startup registration,
 packaging, and signing remain in later phases.
 
