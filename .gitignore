@@ -1,0 +1,38 @@
+# Build output and test results
+bin/
+obj/
+dist/
+TestResults/
+artifacts/build/
+
+# Dependency and tool caches
+node_modules/
+.vs/
+.idea/
+.vscode/
+
+# User-specific editor and project state
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Runtime scratch and recovery data
+.recovery/
+*.tmp
+*.bak
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Windows packaging output
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+
+# Operating-system noise
+Thumbs.db
+Desktop.ini
