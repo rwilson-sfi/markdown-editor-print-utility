@@ -47,6 +47,7 @@ environment.
 ## Important locations
 
 - Shared project root: `.`
-- Source repository: independent local Git repository on `main`; no remote configured.
+- Source repository: independent local Git repository with baseline `main` and current
+  `host/sfi-p14-2255`; no remote configured.
 - Target platform: Windows; supported versions and packaging remain design decisions.
 - Approved product baseline: [docs/PRODUCT-DESIGN.md](docs/PRODUCT-DESIGN.md)

@@ -23,7 +23,8 @@ Curated durable knowledge shared across assistants and machines. Do not store cr
   automatic updates; UTF-8 file handling; and a local-only version-one scope with PDF export through
   the Windows print workflow.
 - **2026-08-24 — Local repository initialization approved.** The user authorized an independent Git
-  repository on `main`. Remote creation and publication were explicitly left deferred. Workspace
+  repository. The verified initial `main` commit is `204d20c`; ongoing work on this laptop uses
+  `host/sfi-p14-2255`. Remote creation and publication were explicitly left deferred. Workspace
   dashboard registration must wait for the GitLab repository because the non-work bootstrap derives
   every dashboard path as a GitLab clone target; registering a nonexistent remote would break clean
   bootstrap runs.
