@@ -390,15 +390,10 @@ public partial class MainWindow : Window, IDisposable
         UpdateWindowState();
     }
 
-    private void ThemeButton_Click(object sender, RoutedEventArgs e)
+    private async void ThemeButton_Click(object sender, RoutedEventArgs e)
     {
-        ThemeMenu.PlacementTarget = ThemeButton;
-        ThemeMenu.IsOpen = true;
-    }
-
-    private async void ThemeMenuItem_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is not System.Windows.Controls.MenuItem { Tag: string themeId })
+        var picker = new ThemePickerWindow(_activeTheme.Id) { Owner = this };
+        if (picker.ShowDialog() != true || picker.SelectedThemeId is not { } themeId)
         {
             return;
         }
@@ -412,13 +407,8 @@ public partial class MainWindow : Window, IDisposable
     private void UpdateThemeVisualState()
     {
         var themeLabel = _activeTheme.DisplayName.ToUpperInvariant();
-        ThemeButtonText.Text = $"THEME / {themeLabel}";
+        ThemeButtonText.Text = $"PALETTE / {themeLabel}";
         ThemeStatusText.Text = themeLabel;
-        NousThemeItem.IsChecked = _activeTheme.Id == "nous";
-        MidnightThemeItem.IsChecked = _activeTheme.Id == "midnight";
-        EmberThemeItem.IsChecked = _activeTheme.Id == "ember";
-        MonoThemeItem.IsChecked = _activeTheme.Id == "mono";
-        CyberpunkThemeItem.IsChecked = _activeTheme.Id == "cyberpunk";
         EditorWebView.DefaultBackgroundColor = System.Drawing.ColorTranslator.FromHtml(_activeTheme.Background);
     }
 

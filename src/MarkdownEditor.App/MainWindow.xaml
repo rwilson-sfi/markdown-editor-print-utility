@@ -65,63 +65,14 @@
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button x:Name="ThemeButton" Style="{StaticResource CommandButtonStyle}"
-                            Click="ThemeButton_Click" ToolTip="Choose interface theme"
-                            AutomationProperties.Name="Choose interface theme">
+                            Click="ThemeButton_Click" ToolTip="Open the searchable palette gallery"
+                            AutomationProperties.Name="Choose interface palette">
                         <StackPanel Orientation="Horizontal">
                             <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentBrush}" Margin="0,0,7,0" />
-                            <TextBlock x:Name="ThemeButtonText" Text="THEME / NOUS" FontSize="10"
+                            <TextBlock x:Name="ThemeButtonText" Text="PALETTE / NOUS" FontSize="10"
                                        FontWeight="SemiBold" VerticalAlignment="Center" />
-                            <TextBlock Text="⌄" Margin="7,-2,0,0" FontSize="12" VerticalAlignment="Center" />
+                            <TextBlock Text="⊞" Margin="7,0,0,0" FontSize="11" VerticalAlignment="Center" />
                         </StackPanel>
-                        <Button.ContextMenu>
-                            <ContextMenu x:Name="ThemeMenu" Placement="Bottom">
-                                <MenuItem x:Name="NousThemeItem" Tag="nous" Click="ThemeMenuItem_Click" IsCheckable="True">
-                                    <MenuItem.Header>
-                                        <StackPanel>
-                                            <TextBlock Text="NOUS" FontWeight="SemiBold" />
-                                            <TextBlock Text="Paper neutral / canonical blue" FontSize="10"
-                                                       Foreground="{DynamicResource TextSecondaryBrush}" />
-                                        </StackPanel>
-                                    </MenuItem.Header>
-                                </MenuItem>
-                                <MenuItem x:Name="MidnightThemeItem" Tag="midnight" Click="ThemeMenuItem_Click" IsCheckable="True">
-                                    <MenuItem.Header>
-                                        <StackPanel>
-                                            <TextBlock Text="MIDNIGHT" FontWeight="SemiBold" />
-                                            <TextBlock Text="Deep blue-violet / cool lavender" FontSize="10"
-                                                       Foreground="{DynamicResource TextSecondaryBrush}" />
-                                        </StackPanel>
-                                    </MenuItem.Header>
-                                </MenuItem>
-                                <MenuItem x:Name="EmberThemeItem" Tag="ember" Click="ThemeMenuItem_Click" IsCheckable="True">
-                                    <MenuItem.Header>
-                                        <StackPanel>
-                                            <TextBlock Text="EMBER" FontWeight="SemiBold" />
-                                            <TextBlock Text="Warm crimson / forged bronze" FontSize="10"
-                                                       Foreground="{DynamicResource TextSecondaryBrush}" />
-                                        </StackPanel>
-                                    </MenuItem.Header>
-                                </MenuItem>
-                                <MenuItem x:Name="MonoThemeItem" Tag="mono" Click="ThemeMenuItem_Click" IsCheckable="True">
-                                    <MenuItem.Header>
-                                        <StackPanel>
-                                            <TextBlock Text="MONO" FontWeight="SemiBold" />
-                                            <TextBlock Text="Compact grayscale / pure focus" FontSize="10"
-                                                       Foreground="{DynamicResource TextSecondaryBrush}" />
-                                        </StackPanel>
-                                    </MenuItem.Header>
-                                </MenuItem>
-                                <MenuItem x:Name="CyberpunkThemeItem" Tag="cyberpunk" Click="ThemeMenuItem_Click" IsCheckable="True">
-                                    <MenuItem.Header>
-                                        <StackPanel>
-                                            <TextBlock Text="CYBERPUNK" FontWeight="SemiBold" />
-                                            <TextBlock Text="Neon green / terminal black" FontSize="10"
-                                                       Foreground="{DynamicResource TextSecondaryBrush}" />
-                                        </StackPanel>
-                                    </MenuItem.Header>
-                                </MenuItem>
-                            </ContextMenu>
-                        </Button.ContextMenu>
                     </Button>
                     <Button Content="×" Style="{StaticResource GhostButtonStyle}" Click="Exit_Click"
                             Margin="5,0,0,0" ToolTip="Exit Markdown Desk" FontSize="18"
