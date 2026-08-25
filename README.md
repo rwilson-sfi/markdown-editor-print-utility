@@ -67,10 +67,12 @@ tray instance. Documents containing known out-of-contract syntax open in source 
 round trip cannot silently normalize them.
 
 The application chrome now uses a compact, retro-minimal visual system inspired by Hermes Desktop.
-The theme selector applies one of five locally bundled palettes—Nous, Midnight, Ember, Mono, or
-Cyberpunk—to the Windows chrome and the rich/source/split editor. The selected palette persists in
-the current user's local application profile. Print-preview chrome follows the screen theme while the
-printable document remains light for predictable office output.
+The searchable palette gallery exposes all eleven Hermes built-ins—Nous, GitHub, Catppuccin,
+Everforest, Solarized, Nous Alt, Midnight, Ember, Mono, Slate, and Cyberpunk—as visual color-preview
+cards. Users can search by name or mood, filter Light/Dark palettes, and select without traversing a
+long menu. The selected palette persists in the current user's local application profile and applies
+to the Windows chrome and rich/source/split editor. Print-preview chrome follows the screen palette
+while the printable document remains light for predictable office output.
 
 Crash recovery, external-change detection, recent files, Explorer registration, startup registration,
 packaging, and signing remain in later phases.

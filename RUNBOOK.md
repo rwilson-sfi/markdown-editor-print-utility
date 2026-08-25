@@ -107,7 +107,7 @@ persists across launches, and does not alter printable output.
 #### Steps
 
 1. Start the development app and open the theme selector in the command bar.
-2. Select Nous, Midnight, Ember, Mono, and Cyberpunk in turn.
+2. Use the gallery search and All/Light/Dark filters to visit every palette in the current catalog.
 3. For each palette, inspect the command bar, Explorer, tabs, status area, editor toolbar, and rich,
    source, and split modes.
 4. Open print preview and verify that the preview chrome follows the screen palette while the
@@ -117,13 +117,14 @@ persists across launches, and does not alter printable output.
 
 #### Expected result
 
-All five palettes remain legible and visually coherent across native and embedded surfaces. The
+Every catalog palette remains legible and visually coherent across native and embedded surfaces. The
 selected palette survives relaunch, no runtime network resource is needed, and the printable page is
 not recolored.
 
 #### Verification
 
-- The theme selector exposes exactly Nous, Midnight, Ember, Mono, and Cyberpunk.
+- The gallery exposes the exact palette IDs in `ThemeCatalog.All`, with no duplicate IDs.
+- Search finds palettes by name or mood, and Light/Dark filters produce the expected subsets.
 - Each palette updates the editor toolbar and editing surface as well as the native application
   chrome.
 - Rich, source, and split modes remain usable in every palette.
@@ -132,8 +133,12 @@ not recolored.
 
 #### Recovery or rollback
 
-Select Nous from the theme menu. If the preferences file is unavailable or invalid, the app falls
+Select Nous from the palette gallery. If the preferences file is unavailable or invalid, the app falls
 back to Nous without blocking startup. Do not delete document files while troubleshooting optional
 appearance settings.
+
+The original five-palette procedure was fully validated on 2026-08-24. The expanded eleven-palette
+gallery compiled successfully, but this host denied fresh unsigned assembly execution before its
+runtime reacceptance; repeat the full procedure after an authorized policy release or signed build.
 
 No installation, shell-registration, or release procedure has been validated yet.

@@ -124,8 +124,11 @@ user accounts, or network services.
 
 - The interface uses a clean retro-minimal visual system inspired by Hermes Desktop, with compact
   controls, crisp borders, restrained depth, and a code-oriented document workspace.
-- Five screen palettes are available: **Nous**, **Midnight**, **Ember**, **Mono**, and
-  **Cyberpunk**.
+- The complete Hermes built-in palette catalog is available: **Nous**, **GitHub**,
+  **Catppuccin**, **Everforest**, **Solarized**, **Nous Alt**, **Midnight**, **Ember**,
+  **Mono**, **Slate**, and **Cyberpunk**.
+- Palette discovery uses a searchable color-preview gallery with Light/Dark filters and a compact
+  multi-column layout. Users must not have to traverse a long linear menu to reach later palettes.
 - A palette applies consistently to the Windows chrome, Explorer, tabs, status area, editor toolbar,
   and rich/source/split editing surface. Print-preview chrome follows the selected palette.
 - The selected palette persists locally in the current user's Windows profile and requires no
@@ -157,9 +160,9 @@ user accounts, or network services.
 
 ### Choose an appearance
 
-1. Open the theme selector in the command bar.
-2. Choose Nous, Midnight, Ember, Mono, or Cyberpunk.
-3. Continue editing with the palette applied across the application and editor.
+1. Open the palette gallery in the command bar.
+2. Scan the color-preview cards, type a name or mood, or filter by Light/Dark appearance.
+3. Choose any built-in palette and continue editing with it applied across the application and editor.
 4. Relaunch the utility and retain the selected palette without changing printed output.
 
 ## Quality and safety requirements

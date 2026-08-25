@@ -47,12 +47,15 @@ Curated durable knowledge shared across assistants and machines. Do not store cr
 - **2026-08-24 — Use `C:\SFM\Dev\MarkdownEditor` for Windows development on `SFI-P14-2255`.** The
   user directed that development use `C:\SFM\Dev\`. A dedicated Git worktree preserves the
   governed repository while providing the host-approved build and execution location.
-- **2026-08-24 — Hermes-inspired five-theme interface adopted and verified.** Commit `af6ccba`
-  implements a compact retro-minimal visual system informed by Hermes Desktop's data-driven palette
-  approach. Nous, Midnight, Ember, Mono, and Cyberpunk apply to the WPF chrome and rich/source/split
-  editor, use only bundled or system resources, and persist locally under the current user's
-  application profile. Preview chrome follows the screen theme, while the printable page remains
-  light. Sixteen automated tests and visual acceptance across every theme and editor mode passed.
+- **2026-08-24 — Complete Hermes built-in catalog and gallery adopted.** Commit `af6ccba` established
+  the compact retro-minimal visual system and runtime-accepted its first five palettes. The user then
+  requested every Hermes built-in; commit `9cadced` expands the catalog to Nous, GitHub, Catppuccin,
+  Everforest, Solarized, Nous Alt, Midnight, Ember, Mono, Slate, and Cyberpunk. Discovery uses a
+  four-column color-preview gallery with instant name/mood search, All/Light/Dark filters, keyboard
+  navigation, and active-palette marking rather than a long menu. Resources remain local, preference
+  persistence is unchanged, and printing remains light. The expanded code and 21-case suite compile,
+  but runtime/test reacceptance is pending because host application control denied the fresh unsigned
+  assemblies.
 
 ## Constraints
 
@@ -72,6 +75,9 @@ Curated durable knowledge shared across assistants and machines. Do not store cr
   unsigned project and test DLLs with `FileLoadException: Access is denied`. The user-directed
   `C:\SFM\Dev\MarkdownEditor` worktree restored normal build, test, and app execution without
   changing security policy. Use that worktree on this host and do not weaken endpoint controls.
+- At approximately 20:24 ET on 2026-08-24, the same application-control denial began affecting fresh
+  unsigned app and test assemblies under `C:\SFM\Dev\MarkdownEditor`. Builds still succeed. Do not
+  bypass the control; re-run acceptance after authorized release or the signed packaging milestone.
 
 ## Items requiring revalidation
 
