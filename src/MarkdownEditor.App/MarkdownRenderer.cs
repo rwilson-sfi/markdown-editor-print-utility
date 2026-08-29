@@ -21,23 +21,83 @@ public sealed class MarkdownRenderer
               <meta name="viewport" content="width=device-width, initial-scale=1" />
               <title>{{WebUtility.HtmlEncode(title)}}</title>
               <style>
-                :root { font-family: "Segoe UI", Arial, sans-serif; color: #172033; background: white; }
-                body { max-width: 8.25in; margin: 0 auto; padding: 0.45in 0.55in; font-size: 11pt; line-height: 1.55; }
-                h1, h2, h3, h4 { color: #111827; line-height: 1.2; page-break-after: avoid; }
-                h1 { font-size: 24pt; border-bottom: 1px solid #d1d5db; padding-bottom: 0.12in; }
-                h2 { font-size: 18pt; margin-top: 0.28in; }
-                h3 { font-size: 14pt; }
+                :root {
+                  color-scheme: light;
+                  font-family: "Segoe UI Variable Text", "Segoe UI", Arial, sans-serif;
+                  color: #1f2328;
+                  background: white;
+                }
+                *, *::before, *::after { box-sizing: border-box; }
+                body {
+                  width: min(100%, 900px);
+                  margin: 0 auto;
+                  padding: 26px 34px 88px;
+                  font-size: 13px;
+                  line-height: 1.54;
+                }
+                h1, h2, h3, h4 {
+                  color: #1f2328;
+                  font-weight: 700;
+                  line-height: 1.3;
+                  letter-spacing: -0.018em;
+                  page-break-after: avoid;
+                }
+                h1 { margin: 0 0 12px; padding: 0; border: 0; font-size: 20px; }
+                h2 { margin: 23px 0 7px; font-size: 15px; }
+                h3 { margin: 18px 0 6px; font-size: 14px; }
+                h4 { margin: 15px 0 5px; font-size: 13px; }
+                p { margin: 0 0 9px; }
+                strong { font-weight: 650; }
+                ul, ol { margin: 5px 0 10px; padding-left: 22px; }
+                li { margin: 3px 0; padding-left: 1px; }
+                li > p { margin-bottom: 3px; }
                 p, li, blockquote { orphans: 3; widows: 3; }
-                blockquote { border-left: 4px solid #9ca3af; margin-left: 0; padding-left: 0.18in; color: #4b5563; }
-                code { font-family: "Cascadia Mono", Consolas, monospace; background: #f3f4f6; padding: 0.02in 0.05in; }
-                pre { background: #f3f4f6; border: 1px solid #d1d5db; padding: 0.14in; overflow-wrap: anywhere; white-space: pre-wrap; page-break-inside: avoid; }
-                table { width: 100%; border-collapse: collapse; margin: 0.16in 0; }
-                th, td { border: 1px solid #9ca3af; padding: 0.06in 0.09in; text-align: left; }
-                th { background: #f3f4f6; }
-                img { max-width: 100%; height: auto; }
-                a { color: #1d4ed8; text-decoration: underline; }
-                @page { margin: 0.55in; }
-                @media print { body { max-width: none; padding: 0; } a { color: black; } }
+                blockquote {
+                  margin: 10px 0 12px;
+                  padding: 2px 0 2px 12px;
+                  border-left: 2px solid #d0d7de;
+                  color: #656d76;
+                }
+                blockquote > :last-child { margin-bottom: 0; }
+                code {
+                  padding: 2px 5px;
+                  border: 1px solid #d0d7de;
+                  border-radius: 4px;
+                  color: #1f2328;
+                  background: #f6f8fa;
+                  font-family: "Cascadia Mono", Consolas, monospace;
+                  font-size: 0.9em;
+                }
+                pre {
+                  margin: 10px 0 12px;
+                  padding: 12px 14px;
+                  overflow-wrap: anywhere;
+                  white-space: pre-wrap;
+                  border: 1px solid #d0d7de;
+                  border-radius: 7px;
+                  color: #1f2328;
+                  background: #f6f8fa;
+                  page-break-inside: avoid;
+                }
+                pre code { padding: 0; border: 0; background: transparent; font-size: 12px; line-height: 1.5; }
+                table {
+                  width: 100%;
+                  margin: 10px 0 14px;
+                  overflow: hidden;
+                  border: 1px solid #d0d7de;
+                  border-collapse: separate;
+                  border-spacing: 0;
+                  border-radius: 7px;
+                  font-size: 12.5px;
+                  page-break-inside: avoid;
+                }
+                th, td { padding: 6px 8px; border: 1px solid #d0d7de; text-align: left; }
+                th { background: #f6f8fa; }
+                img { max-width: 100%; height: auto; border-radius: 7px; }
+                hr { margin: 18px 0; border: 0; border-top: 1px solid #d0d7de; }
+                a { color: #0053fd; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+                @page { margin: 0.4in; }
+                @media print { body { width: auto; max-width: none; padding: 0; } }
               </style>
             </head>
             <body>
