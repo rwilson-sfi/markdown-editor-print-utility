@@ -42,7 +42,7 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="3">
+                                CornerRadius="7">
                             <ContentPresenter />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -95,7 +95,7 @@
                 </StackPanel>
                 <Border Grid.Column="1" Background="{DynamicResource SecondaryBrush}"
                         BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
-                        CornerRadius="2" Padding="11,6" VerticalAlignment="Center">
+                        CornerRadius="6" Padding="11,6" VerticalAlignment="Center">
                     <TextBlock x:Name="CatalogSummaryText" Text="11 BUILT-INS" FontSize="9"
                                FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
                 </Border>

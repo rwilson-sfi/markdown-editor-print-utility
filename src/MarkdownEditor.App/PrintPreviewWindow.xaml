@@ -20,7 +20,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Width="28" Height="28" Background="{DynamicResource AccentBrush}" CornerRadius="2">
+                    <Border Width="28" Height="28" Background="{DynamicResource AccentBrush}" CornerRadius="6">
                         <TextBlock Text="P" Foreground="{DynamicResource AccentTextBrush}"
                                    FontFamily="Cascadia Mono, Consolas" FontSize="11" FontWeight="Bold"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
