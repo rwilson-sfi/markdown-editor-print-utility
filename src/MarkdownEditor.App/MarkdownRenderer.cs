@@ -96,8 +96,21 @@ public sealed class MarkdownRenderer
                 img { max-width: 100%; height: auto; border-radius: 7px; }
                 hr { margin: 18px 0; border: 0; border-top: 1px solid #d0d7de; }
                 a { color: #0053fd; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-                @page { margin: 0.4in; }
-                @media print { body { width: auto; max-width: none; padding: 0; } }
+                @page { margin: 0.42in 0.4in 0.42in 0.5in; }
+                @media print {
+                  body {
+                    width: auto;
+                    max-width: none;
+                    padding: 0;
+                    font-size: 12.5px;
+                  }
+                  h1 { font-size: 19.25px; }
+                  h2 { font-size: 14.5px; }
+                  h3 { font-size: 13.5px; }
+                  h4 { font-size: 12.5px; }
+                  pre code { font-size: 11.5px; }
+                  table { font-size: 12px; }
+                }
               </style>
             </head>
             <body>
