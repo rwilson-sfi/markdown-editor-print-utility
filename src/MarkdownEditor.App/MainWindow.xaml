@@ -11,6 +11,7 @@
         Background="{DynamicResource WindowBackgroundBrush}"
         AllowDrop="True"
         Loaded="Window_Loaded"
+        Activated="Window_Activated"
         Closing="Window_Closing"
         Closed="Window_Closed"
         Drop="Window_Drop">
@@ -45,6 +46,9 @@
                             AutomationProperties.Name="New document" />
                     <Button Content="OPEN" Click="Open_Click" ToolTip="Open one or more Markdown documents"
                             AutomationProperties.Name="Open documents" />
+                    <Button x:Name="RecentButton" Content="RECENT" Click="Recent_Click"
+                            ToolTip="Open a recently used Markdown document"
+                            AutomationProperties.Name="Open recent document" />
                     <Button Content="FOLDER" Click="OpenFolder_Click" ToolTip="Choose an Explorer folder"
                             AutomationProperties.Name="Open folder" />
                     <Button Content="SAVE" Click="Save_Click" ToolTip="Save the active document" />

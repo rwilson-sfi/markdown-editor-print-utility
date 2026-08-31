@@ -10,6 +10,8 @@ public sealed class DocumentSession : INotifyPropertyChanged
     private string _markdown;
     private string _lastSavedMarkdown;
     private string? _filePath;
+    private bool _isRecoveredDraft;
+    private bool _isMissingOnDisk;
 
     private DocumentSession(
         string? filePath,
@@ -48,16 +50,25 @@ public sealed class DocumentSession : INotifyPropertyChanged
 
     public IReadOnlyList<string> RichEditorRisks { get; private set; }
 
-    public bool IsDirty => !string.Equals(_markdown, _lastSavedMarkdown, StringComparison.Ordinal);
+    // Saving normalizes every line ending to the document's recorded style, so a
+    // line-ending-only difference from the editor surface is not a real modification.
+    public bool IsDirty => _isRecoveredDraft
+        || _isMissingOnDisk
+        || !string.Equals(
+            DocumentFileService.NormalizeLineEndings(_markdown, LineEnding.Lf),
+            DocumentFileService.NormalizeLineEndings(_lastSavedMarkdown, LineEnding.Lf),
+            StringComparison.Ordinal);
 
     public string DisplayName => _filePath is null ? "Untitled" : Path.GetFileName(_filePath);
 
     public string Header => $"{(IsDirty ? "● " : string.Empty)}{DisplayName}";
 
+    // The placeholder template is not user-authored content, so an untouched
+    // untitled document is clean: no close prompt and no recovery draft.
     public static DocumentSession CreateUntitled() => new(
         filePath: null,
         markdown: "# Untitled\n\nStart writing…\n",
-        lastSavedMarkdown: string.Empty,
+        lastSavedMarkdown: "# Untitled\n\nStart writing…\n",
         hasUtf8Bom: false,
         lineEnding: LineEnding.CrLf,
         lastWriteTimeUtc: DateTimeOffset.MinValue);
@@ -69,6 +80,60 @@ public sealed class DocumentSession : INotifyPropertyChanged
         file.HasUtf8Bom,
         file.LineEnding,
         file.LastWriteTimeUtc);
+
+    public static DocumentSession FromRecoveredDraft(
+        string? filePath,
+        string markdown,
+        bool hasUtf8Bom,
+        LineEnding lineEnding)
+    {
+        var session = new DocumentSession(
+            filePath is null ? null : Path.GetFullPath(filePath),
+            markdown,
+            markdown,
+            hasUtf8Bom,
+            lineEnding,
+            DateTimeOffset.MinValue)
+        {
+            _isRecoveredDraft = true,
+        };
+        return session;
+    }
+
+    public void ReloadFromFile(MarkdownFile file)
+    {
+        _filePath = file.Path;
+        _markdown = file.Text;
+        _lastSavedMarkdown = file.Text;
+        HasUtf8Bom = file.HasUtf8Bom;
+        LineEnding = file.LineEnding;
+        LastWriteTimeUtc = file.LastWriteTimeUtc;
+        _isRecoveredDraft = false;
+        _isMissingOnDisk = false;
+        RichEditorRisks = MarkdownCompatibilityInspector.FindRichEditorRisks(file.Text);
+        if (RichEditorRisks.Count > 0)
+        {
+            EditorMode = "source";
+        }
+
+        OnPropertyChanged(nameof(Markdown));
+        OnPropertyChanged(nameof(FilePath));
+        OnPropertyChanged(nameof(DisplayName));
+        OnPropertyChanged(nameof(IsDirty));
+        OnPropertyChanged(nameof(Header));
+    }
+
+    public void MarkMissingOnDisk()
+    {
+        if (_isMissingOnDisk)
+        {
+            return;
+        }
+
+        _isMissingOnDisk = true;
+        OnPropertyChanged(nameof(IsDirty));
+        OnPropertyChanged(nameof(Header));
+    }
 
     public void SetMarkdown(string markdown)
     {
@@ -89,6 +154,8 @@ public sealed class DocumentSession : INotifyPropertyChanged
         _filePath = Path.GetFullPath(path);
         _lastSavedMarkdown = _markdown;
         LastWriteTimeUtc = lastWriteTimeUtc;
+        _isRecoveredDraft = false;
+        _isMissingOnDisk = false;
         OnPropertyChanged(nameof(FilePath));
         OnPropertyChanged(nameof(DisplayName));
         OnPropertyChanged(nameof(IsDirty));

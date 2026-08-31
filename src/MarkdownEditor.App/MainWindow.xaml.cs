@@ -5,10 +5,14 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using MarkdownEditor.Core.Documents;
+using MarkdownEditor.Core.Recovery;
 using MarkdownEditor.Core.Theming;
 using Microsoft.Web.WebView2.Core;
+using ContextMenu = System.Windows.Controls.ContextMenu;
 using DataFormats = System.Windows.DataFormats;
+using MenuItem = System.Windows.Controls.MenuItem;
 using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using OpenFolderDialog = Microsoft.Win32.OpenFolderDialog;
@@ -19,15 +23,26 @@ namespace MarkdownEditor.App;
 
 public partial class MainWindow : Window, IDisposable
 {
+    private static readonly string AppDataDirectory = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "MarkdownEditor");
+
     private readonly DocumentFileService _fileService = new();
     private readonly MarkdownRenderer _renderer = new();
     private readonly IReadOnlyList<string> _initialPaths;
     private readonly WinForms.NotifyIcon _trayIcon;
     private readonly ThemeManager _themeManager = new();
+    private readonly RecentFilesStore _recentFiles = new(Path.Combine(AppDataDirectory, "recent-files.json"));
+    private readonly RecoveryDraftStore _recoveryStore = new(Path.Combine(AppDataDirectory, "RecoveryDrafts"));
+    private readonly DispatcherTimer _recoveryTimer = new() { Interval = TimeSpan.FromSeconds(30) };
+    private readonly Dictionary<string, string> _draftedMarkdown = [];
+    private readonly Dictionary<string, DateTimeOffset> _dismissedDiskChanges = [];
+    private readonly HashSet<string> _notifiedMissingOnDisk = [];
     private ThemeDefinition _activeTheme;
     private DocumentSession? _activeDocument;
     private bool _editorReady;
     private bool _allowClose;
+    private bool _checkingExternalChanges;
     private bool _disposed;
 
     public MainWindow(IReadOnlyList<string>? initialPaths = null)
@@ -44,6 +59,7 @@ public partial class MainWindow : Window, IDisposable
             ContextMenuStrip = BuildTrayMenu(),
         };
         _trayIcon.DoubleClick += (_, _) => Dispatcher.Invoke(RestoreWindow);
+        _recoveryTimer.Tick += async (_, _) => await SnapshotDirtyDocumentsAsync();
         UpdateThemeVisualState();
         UpdateWindowState();
     }
@@ -55,15 +71,21 @@ public partial class MainWindow : Window, IDisposable
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         await InitializeEditorAsync();
+        await RestoreRecoveryDraftsAsync();
         if (_initialPaths.Count > 0)
         {
             await OpenPathsAsync(_initialPaths);
         }
-        else
+
+        if (Documents.Count == 0)
         {
             CreateUntitledDocument();
         }
+
+        _recoveryTimer.Start();
     }
+
+    private async void Window_Activated(object? sender, EventArgs e) => await CheckExternalChangesAsync();
 
     public async Task OpenPathsFromExternalAsync(IReadOnlyList<string> paths)
     {
@@ -225,6 +247,7 @@ public partial class MainWindow : Window, IDisposable
             var document = DocumentSession.FromFile(file);
             Documents.Add(document);
             DocumentTabs.SelectedItem = document;
+            _recentFiles.Touch(fullPath);
             if (FolderRoots.Count == 0 && Path.GetDirectoryName(fullPath) is { } folder)
             {
                 SetFolderRoot(folder);
@@ -237,6 +260,212 @@ public partial class MainWindow : Window, IDisposable
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             MessageBox.Show(this, exception.Message, "Unable to open document", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async Task RestoreRecoveryDraftsAsync()
+    {
+        IReadOnlyList<RecoveryDraft> drafts;
+        try
+        {
+            drafts = _recoveryStore.LoadDrafts();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return;
+        }
+
+        if (drafts.Count == 0)
+        {
+            return;
+        }
+
+        var result = MessageBox.Show(this,
+            $"A previous session left {drafts.Count} unsaved document(s) behind.\n\nRestore them now? Choosing No deletes the recovered drafts.",
+            "Recovered documents", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        if (result != MessageBoxResult.Yes)
+        {
+            TryClearRecoveryStore();
+            return;
+        }
+
+        foreach (var draft in drafts)
+        {
+            var document = DocumentSession.FromRecoveredDraft(
+                draft.OriginalPath, draft.Markdown, draft.HasUtf8Bom, draft.LineEnding);
+            Documents.Add(document);
+            DocumentTabs.SelectedItem = document;
+        }
+
+        // Restored sessions carry new IDs, so re-snapshot under those IDs before dropping the old drafts.
+        TryClearRecoveryStore();
+        await SnapshotDirtyDocumentsAsync();
+        StatusText.Text = $"Restored {drafts.Count} recovered document(s). Save them to keep the content.";
+    }
+
+    private async Task SnapshotDirtyDocumentsAsync()
+    {
+        foreach (var document in Documents.ToArray())
+        {
+            try
+            {
+                if (document.IsDirty)
+                {
+                    if (_draftedMarkdown.TryGetValue(document.Id, out var drafted)
+                        && string.Equals(drafted, document.Markdown, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    await _recoveryStore.SaveDraftAsync(new RecoveryDraft(
+                        document.Id,
+                        document.FilePath,
+                        document.Markdown,
+                        document.HasUtf8Bom,
+                        document.LineEnding,
+                        DateTimeOffset.UtcNow));
+                    _draftedMarkdown[document.Id] = document.Markdown;
+                }
+                else if (_draftedMarkdown.Remove(document.Id))
+                {
+                    _recoveryStore.DeleteDraft(document.Id);
+                }
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                // Draft persistence is best-effort; editing continues with in-memory content.
+            }
+        }
+    }
+
+    private void DiscardDraft(DocumentSession document)
+    {
+        _draftedMarkdown.Remove(document.Id);
+        _dismissedDiskChanges.Remove(document.Id);
+        _notifiedMissingOnDisk.Remove(document.Id);
+        try
+        {
+            _recoveryStore.DeleteDraft(document.Id);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // A stale draft is re-offered on the next start and can be declined there.
+        }
+    }
+
+    private void TryClearRecoveryStore()
+    {
+        try
+        {
+            _recoveryStore.Clear();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // Leftover drafts are re-offered on the next start.
+        }
+    }
+
+    private async Task CheckExternalChangesAsync()
+    {
+        if (_checkingExternalChanges)
+        {
+            return;
+        }
+
+        _checkingExternalChanges = true;
+        try
+        {
+            foreach (var document in Documents.ToArray())
+            {
+                if (document.FilePath is not { } path)
+                {
+                    continue;
+                }
+
+                var exists = File.Exists(path);
+                DateTimeOffset? currentWriteTimeUtc = exists ? File.GetLastWriteTimeUtc(path) : null;
+                switch (ExternalChangeInspector.Classify(exists, document.LastWriteTimeUtc, currentWriteTimeUtc))
+                {
+                    case ExternalDocumentState.Unchanged:
+                        _notifiedMissingOnDisk.Remove(document.Id);
+                        break;
+                    case ExternalDocumentState.MissingOnDisk:
+                        if (_notifiedMissingOnDisk.Add(document.Id))
+                        {
+                            document.MarkMissingOnDisk();
+                            if (ReferenceEquals(document, _activeDocument))
+                            {
+                                UpdateWindowState();
+                            }
+
+                            StatusText.Text =
+                                $"{document.DisplayName} was deleted or moved on disk. Saving will recreate it.";
+                        }
+
+                        break;
+                    case ExternalDocumentState.ChangedOnDisk:
+                        if (_dismissedDiskChanges.TryGetValue(document.Id, out var dismissed)
+                            && dismissed == currentWriteTimeUtc)
+                        {
+                            break;
+                        }
+
+                        if (!document.IsDirty)
+                        {
+                            await ReloadDocumentAsync(document);
+                        }
+                        else
+                        {
+                            var choice = MessageBox.Show(this,
+                                $"{document.DisplayName} changed on disk and has unsaved changes in this editor.\n\nReload from disk and discard the unsaved changes?",
+                                "File changed on disk", MessageBoxButton.YesNo, MessageBoxImage.Warning,
+                                MessageBoxResult.No);
+                            if (choice == MessageBoxResult.Yes)
+                            {
+                                await ReloadDocumentAsync(document);
+                            }
+                            else if (currentWriteTimeUtc is { } keptTimestamp)
+                            {
+                                _dismissedDiskChanges[document.Id] = keptTimestamp;
+                            }
+                        }
+
+                        break;
+                }
+            }
+        }
+        finally
+        {
+            _checkingExternalChanges = false;
+        }
+    }
+
+    private async Task ReloadDocumentAsync(DocumentSession document)
+    {
+        if (document.FilePath is not { } path)
+        {
+            return;
+        }
+
+        try
+        {
+            var file = await _fileService.LoadAsync(path);
+            document.ReloadFromFile(file);
+            DiscardDraft(document);
+            if (ReferenceEquals(document, _activeDocument))
+            {
+                await LoadActiveDocumentAsync();
+            }
+
+            StatusText.Text = $"Reloaded {document.DisplayName} after an external change.";
+        }
+        catch (UnsupportedTextEncodingException exception)
+        {
+            MessageBox.Show(this, exception.Message, "Unsupported encoding", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(this, exception.Message, "Unable to reload document", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -278,6 +507,7 @@ public partial class MainWindow : Window, IDisposable
         }
 
         Documents.Remove(document);
+        DiscardDraft(document);
         if (Documents.Count == 0)
         {
             CreateUntitledDocument();
@@ -331,10 +561,29 @@ public partial class MainWindow : Window, IDisposable
             }
         }
 
+        var fullTargetPath = Path.GetFullPath(targetPath);
+        if (string.Equals(fullTargetPath, document.FilePath, StringComparison.OrdinalIgnoreCase)
+            && File.Exists(fullTargetPath)
+            && ExternalChangeInspector.Classify(
+                fileExists: true,
+                document.LastWriteTimeUtc,
+                File.GetLastWriteTimeUtc(fullTargetPath)) == ExternalDocumentState.ChangedOnDisk)
+        {
+            var choice = MessageBox.Show(this,
+                $"{document.DisplayName} changed on disk after it was loaded here.\n\nOverwrite the newer copy on disk?",
+                "File changed on disk", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+            if (choice != MessageBoxResult.Yes)
+            {
+                return false;
+            }
+        }
+
         try
         {
             await _fileService.SaveAsync(targetPath, document.Markdown, document.HasUtf8Bom, document.LineEnding);
             document.MarkSaved(targetPath, File.GetLastWriteTimeUtc(targetPath));
+            DiscardDraft(document);
+            _recentFiles.Touch(fullTargetPath);
             StatusText.Text = $"Saved {document.FilePath}";
             UpdateWindowState();
             return true;
@@ -460,6 +709,8 @@ public partial class MainWindow : Window, IDisposable
             }
         }
 
+        _recoveryTimer.Stop();
+        TryClearRecoveryStore();
         _allowClose = true;
         _trayIcon.Visible = false;
         Close();
@@ -506,12 +757,74 @@ public partial class MainWindow : Window, IDisposable
         }
     }
 
+    private void Recent_Click(object sender, RoutedEventArgs e)
+    {
+        var menu = new ContextMenu();
+        var entries = _recentFiles.Load();
+        if (entries.Count == 0)
+        {
+            menu.Items.Add(new MenuItem { Header = "No recent documents", IsEnabled = false });
+        }
+
+        foreach (var path in entries)
+        {
+            var item = new MenuItem
+            {
+                Header = Path.GetFileName(path).Replace("_", "__", StringComparison.Ordinal),
+                ToolTip = path,
+                Tag = path,
+            };
+            item.Click += async (_, _) => await OpenRecentPathAsync(path);
+            menu.Items.Add(item);
+        }
+
+        menu.PlacementTarget = RecentButton;
+        menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+        menu.IsOpen = true;
+    }
+
+    private async Task OpenRecentPathAsync(string path)
+    {
+        if (!File.Exists(path))
+        {
+            _recentFiles.Remove(path);
+            MessageBox.Show(this, $"{path} no longer exists and was removed from the recent list.",
+                "File not found", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        await OpenPathAsync(path);
+    }
+
     private WinForms.ContextMenuStrip BuildTrayMenu()
     {
         var menu = new WinForms.ContextMenuStrip();
         menu.Items.Add("Open editor", null, (_, _) => Dispatcher.Invoke(RestoreWindow));
+        var recentMenu = new WinForms.ToolStripMenuItem("Open recent");
+        menu.Items.Add(recentMenu);
         menu.Items.Add(new WinForms.ToolStripSeparator());
         menu.Items.Add("Exit", null, (_, _) => Dispatcher.InvokeAsync(ExitApplicationAsync));
+        menu.Opening += (_, _) =>
+        {
+            recentMenu.DropDownItems.Clear();
+            var entries = _recentFiles.Load();
+            if (entries.Count == 0)
+            {
+                recentMenu.DropDownItems.Add(new WinForms.ToolStripMenuItem("No recent documents") { Enabled = false });
+                return;
+            }
+
+            foreach (var path in entries)
+            {
+                var item = new WinForms.ToolStripMenuItem(Path.GetFileName(path)) { ToolTipText = path };
+                item.Click += (_, _) => Dispatcher.InvokeAsync(async () =>
+                {
+                    RestoreWindow();
+                    await OpenRecentPathAsync(path);
+                });
+                recentMenu.DropDownItems.Add(item);
+            }
+        };
         return menu;
     }
 
@@ -560,6 +873,7 @@ public partial class MainWindow : Window, IDisposable
             return;
         }
 
+        _recoveryTimer.Stop();
         _trayIcon.Dispose();
         EditorWebView.Dispose();
         _disposed = true;
