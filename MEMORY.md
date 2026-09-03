@@ -57,6 +57,16 @@ Curated durable knowledge shared across assistants and machines. Do not store cr
   but runtime/test reacceptance is pending because host application control denied the fresh unsigned
   assemblies.
 
+- **2026-09-02 — Print-failure report root-caused to startup, not printing.** The user's report that
+  printing to Microsoft Print to PDF "errors out or nothing happens" was caused by secondary launches
+  crashing before the file opened: an unhandled `UnauthorizedAccessException` connecting to the
+  single-instance pipe when the running primary was started in a different security context (one
+  2026-08-31 event records "pipe … not owned by the current user", the signature of an elevated
+  instance), plus application-control denials of freshly built binaries. No print-path failure exists
+  in the event log. Commit `28df687` makes every hand-off failure show an actionable dialog and lets
+  the primary listener recover from a foreign-owned pipe name; it is build-verified, with runtime
+  acceptance pending host policy.
+
 ## Constraints
 
 - Target Windows and behave as a system-tray application.
@@ -78,6 +88,13 @@ Curated durable knowledge shared across assistants and machines. Do not store cr
 - At approximately 20:24 ET on 2026-08-24, the same application-control denial began affecting fresh
   unsigned app and test assemblies under `C:\SFM\Dev\MarkdownEditor`. Builds still succeed. Do not
   bypass the control; re-run acceptance after authorized release or the signed packaging milestone.
+  Reconfirmed 2026-09-02: first execution of a fresh build is denied in both locations, while binaries
+  that have previously run keep running, so denial appears to be per-binary. Retries minutes later did
+  not clear it that evening.
+- Never run the editor elevated. An elevated primary owns the single-instance mutex and pipe in a
+  different security context, so every normal launch fails to connect and (before `28df687`) crashed
+  silently. Diagnose "the app does nothing" reports first via Application event log IDs 1000/1026,
+  which carried the full managed stack for every failure in this incident.
 
 ## Items requiring revalidation
 
