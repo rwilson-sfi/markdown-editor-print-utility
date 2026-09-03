@@ -78,6 +78,19 @@ public sealed class SingleInstanceCoordinator : IDisposable
             {
                 // A client can disappear between connecting and sending. Keep the primary listener alive.
             }
+            catch (UnauthorizedAccessException)
+            {
+                // Another security context (for example an elevated instance) owns the pipe name.
+                // Retry after a delay so this instance recovers once that process exits.
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+            }
             catch (JsonException)
             {
                 // Ignore malformed local messages and continue serving valid open requests.

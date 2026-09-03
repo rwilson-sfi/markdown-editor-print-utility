@@ -1,4 +1,3 @@
-using System.IO;
 using System.Windows;
 using MarkdownEditor.Core.Documents;
 
@@ -21,10 +20,22 @@ public partial class App : System.Windows.Application
             {
                 await _instanceCoordinator.SendOpenFilesAsync(initialPaths);
             }
-            catch (Exception exception) when (exception is IOException or TimeoutException or OperationCanceledException)
+            catch (Exception exception)
             {
+                // The forwarding process has no window of its own; any hand-off failure must end in
+                // this dialog rather than an unhandled crash from async void OnStartup.
+                var detail = exception switch
+                {
+                    UnauthorizedAccessException =>
+                        "The running Markdown Editor instance refused the connection. It may have been " +
+                        "started with different permissions (for example, as administrator). Close that " +
+                        "instance and try again.",
+                    TimeoutException or OperationCanceledException =>
+                        "The running Markdown Editor instance did not respond within five seconds.",
+                    _ => exception.Message,
+                };
                 System.Windows.MessageBox.Show(
-                    $"The running Markdown Editor could not receive the open request.\n\n{exception.Message}",
+                    $"The running Markdown Editor could not receive the open request.\n\n{detail}",
                     "Unable to open document",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
