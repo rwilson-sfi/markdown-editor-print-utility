@@ -28,7 +28,8 @@ single-instance file forwarding are implemented and runtime-accepted from the us
 `C:\SFM\Dev\MarkdownEditor` worktree. A Hermes-inspired retro-minimal interface is implemented across
 the WPF chrome, editor, and preview chrome. The palette catalog now contains all eleven official
 Hermes built-ins and uses a searchable, Light/Dark-filterable, four-column color-preview gallery in
-place of the original linear menu. The 21-case automated suite compiles and the full solution builds
+place of the original linear menu. Mermaid fences now render locally in rich view and print output
+with a clean diagram theme. The 39-case automated suite compiles and the full solution builds
 with zero warnings or errors. The original five-palette implementation passed runtime acceptance;
 expanded-gallery runtime and test execution await release by this host's application-control policy.
 
@@ -65,7 +66,8 @@ Exit evidence:
 
 - Run supported Markdown round-trip fixtures.
 - Verify print preview, Microsoft Print to PDF, and one physical printer.
-- Verify local images, code styles, tables, tasks, headers/footers, margins, and page numbers.
+- Verify local images, Mermaid diagrams, code styles, tables, tasks, headers/footers, margins, and
+  page numbers.
 - Verify offline use, missing-WebView2 handling, high DPI, keyboard operation, and contrast.
 - Produce the signed release and checksums.
 

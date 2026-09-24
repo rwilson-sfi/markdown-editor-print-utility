@@ -112,8 +112,10 @@ persists across launches, and does not alter printable output.
    source, and split modes.
 4. Open print preview and verify that the preview chrome follows the screen palette while the
    printable page stays light.
-5. Select a non-default palette, exit the app, relaunch it, and confirm that the selection persists.
-6. Return to the intended palette and exit the exact development app process after acceptance.
+5. Open a document containing a Mermaid fence and verify that rich view and print preview show the
+   same clean rounded-node diagram without exposing the raw fence by default.
+6. Select a non-default palette, exit the app, relaunch it, and confirm that the selection persists.
+7. Return to the intended palette and exit the exact development app process after acceptance.
 
 #### Expected result
 

@@ -4,11 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc --noEmit && vite build"
+    "build": "tsc --noEmit && vite build && node scripts/copy-mermaid.mjs"
   },
   "dependencies": {
     "@milkdown/crepe": "7.22.1",
-    "@milkdown/kit": "7.22.1"
+    "@milkdown/kit": "7.22.1",
+    "mermaid": "11.17.2"
   },
   "devDependencies": {
     "typescript": "5.9.2",

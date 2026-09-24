@@ -49,6 +49,7 @@ Responsibilities:
 - Markdown serialization after rich edits
 - Source and split-mode editing
 - Formatting toolbar, lists, tasks, tables, links, images, and code blocks
+- Local Mermaid diagram preview with editable fenced source
 - Keyboard editing and browser-grade accessibility semantics
 
 The editor is bundled into static local assets at build time. The running application makes no CDN
@@ -60,13 +61,15 @@ Pinned editor packages at adoption:
 
 - `@milkdown/crepe` 7.22.1
 - `@milkdown/kit` 7.22.1
+- `mermaid` 11.17.2
 - Vite 8.2.2 for build-time bundling only
 
 ### Markdown renderer: Markdig
 
 Markdig 1.3.2 provides the host-side CommonMark/GFM-compatible parse and HTML render pipeline used
 for preview and printing. Rendering is separate from saving: print operations consume a snapshot and
-never write the source file.
+never write the source file. Mermaid fences remain ordinary Markdown in the saved document; the
+bundled Mermaid.js asset converts those fenced blocks to sanitized SVG in rich and print surfaces.
 
 ### Printing: WebView2
 
@@ -119,9 +122,10 @@ Each open document tracks:
 - Recovery-draft identity and last recovery timestamp
 - Active editor mode
 
-Supported Markdown moves freely between source and rich modes. Before entering rich mode, the host
-detects out-of-contract syntax such as Mermaid fences, math, footnotes, and embedded HTML. The user
-is warned that rich serialization may normalize it; cancellation leaves the source untouched.
+Supported Markdown, including Mermaid fences, moves freely between source and rich modes. Before
+entering rich mode, the host detects remaining out-of-contract syntax such as math, footnotes, and
+embedded HTML. The user is warned that rich serialization may normalize it; cancellation leaves the
+source untouched.
 
 ## Persistence and recovery
 

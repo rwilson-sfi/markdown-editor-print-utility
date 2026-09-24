@@ -26,6 +26,7 @@ environment.
 - A tray menu for opening the editor and accessing common commands.
 - Formatted print preview and the standard Windows print dialog.
 - GitHub-style Markdown as the approved version-one compatibility target.
+- Local Mermaid diagram rendering in rich view, print preview, and printed output.
 
 ### Excluded
 
@@ -65,6 +66,10 @@ window, and the standard Windows system print dialog. A per-user mutex and named
 from later launches into the existing window, so an Explorer Open command does not create a second
 tray instance. Documents containing known out-of-contract syntax open in source mode so a rich-editor
 round trip cannot silently normalize them.
+
+Mermaid fenced blocks are rendered locally with a pinned Mermaid.js dependency and a clean,
+Codex-inspired diagram theme. Diagram rendering is available in rich view and formatted print output;
+the Markdown source remains the canonical saved representation.
 
 The application chrome now uses a compact, retro-minimal visual system inspired by Hermes Desktop.
 The searchable palette gallery exposes all eleven Hermes built-ins—Nous, GitHub, Catppuccin,

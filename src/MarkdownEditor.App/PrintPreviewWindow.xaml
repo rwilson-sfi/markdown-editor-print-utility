@@ -32,7 +32,8 @@
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="PRINT…" Click="Print_Click" Style="{StaticResource PrimaryButtonStyle}" />
+                    <Button x:Name="PrintButton" Content="PRINT…" Click="Print_Click"
+                            Style="{StaticResource PrimaryButtonStyle}" IsEnabled="False" />
                     <Button Content="CLOSE" Click="Close_Click" />
                 </StackPanel>
             </Grid>

@@ -26,3 +26,11 @@ This fixture exercises **bold**, *italic*, ~~strikethrough~~, and [a link](https
 ```csharp
 Console.WriteLine("Markdown");
 ```
+
+## Diagram
+
+```mermaid
+flowchart LR
+  A["Markdown source"] --> B["Rich preview"]
+  B --> C["Formatted print"]
+```

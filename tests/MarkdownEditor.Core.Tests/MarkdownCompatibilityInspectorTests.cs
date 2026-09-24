@@ -15,6 +15,11 @@ public sealed class MarkdownCompatibilityInspectorTests
             | A | B |
             | - | - |
             | 1 | 2 |
+
+            ```mermaid
+            flowchart LR
+              A --> B
+            ```
             """;
 
         Assert.Empty(MarkdownCompatibilityInspector.FindRichEditorRisks(markdown));
@@ -24,8 +29,8 @@ public sealed class MarkdownCompatibilityInspectorTests
     public void FindRichEditorRisks_IdentifiesOutOfContractSyntax()
     {
         const string markdown = """
-            ```mermaid
-            graph LR
+            ```math
+            x = 1
             ```
 
             A reference[^note].
@@ -39,7 +44,7 @@ public sealed class MarkdownCompatibilityInspectorTests
 
         var risks = MarkdownCompatibilityInspector.FindRichEditorRisks(markdown);
 
-        Assert.Contains("Mermaid or mathematical fenced blocks", risks);
+        Assert.Contains("mathematical fenced blocks", risks);
         Assert.Contains("footnotes", risks);
         Assert.Contains("mathematical notation", risks);
         Assert.Contains("embedded HTML", risks);

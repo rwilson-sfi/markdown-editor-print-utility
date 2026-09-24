@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using Microsoft.Web.WebView2.Core;
 
@@ -19,6 +20,17 @@ public partial class PrintPreviewWindow : Window
         PreviewWebView.CoreWebView2.Settings.AreDevToolsEnabled = false;
         PreviewWebView.CoreWebView2.Settings.IsStatusBarEnabled = false;
         PreviewWebView.CoreWebView2.NewWindowRequested += (_, args) => args.Handled = true;
+        PreviewWebView.CoreWebView2.WebMessageReceived += (_, args) =>
+        {
+            if (args.TryGetWebMessageAsString() == "preview-ready")
+            {
+                PrintButton.IsEnabled = true;
+            }
+        };
+        PreviewWebView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+            "markdown-editor.local",
+            Path.Combine(AppContext.BaseDirectory, "EditorAssets"),
+            CoreWebView2HostResourceAccessKind.Allow);
         PreviewWebView.NavigateToString(_html);
     }
 

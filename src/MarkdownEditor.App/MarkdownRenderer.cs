@@ -96,6 +96,54 @@ public sealed class MarkdownRenderer
                 img { max-width: 100%; height: auto; border-radius: 7px; }
                 hr { margin: 18px 0; border: 0; border-top: 1px solid #d0d7de; }
                 a { color: #0053fd; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+                .mermaid-diagram {
+                  min-width: 520px;
+                  margin: 18px auto 24px;
+                  overflow-x: auto;
+                  color: #245aa5;
+                  background: transparent;
+                  text-align: center;
+                }
+                .mermaid-diagram svg {
+                  display: block;
+                  width: 100%;
+                  max-width: 100% !important;
+                  height: auto;
+                  margin: 0 auto;
+                  font-family: "Segoe UI Variable Text", "Segoe UI", Arial, sans-serif !important;
+                }
+                .mermaid-diagram .node rect,
+                .mermaid-diagram .node polygon,
+                .mermaid-diagram .node path { stroke-width: 1px !important; }
+                .mermaid-diagram .node rect { rx: 13px; ry: 13px; }
+                .mermaid-diagram .nodeLabel,
+                .mermaid-diagram .nodeLabel p {
+                  color: #245aa5 !important;
+                  font-family: "Segoe UI Variable Text", "Segoe UI", Arial, sans-serif !important;
+                  font-size: 13px !important;
+                  font-weight: 600 !important;
+                  line-height: 1.22 !important;
+                }
+                .mermaid-diagram .edgeLabel,
+                .mermaid-diagram .edgeLabel p {
+                  color: #656d76 !important;
+                  background: white !important;
+                  font: 12px/1.25 "Segoe UI Variable Text", "Segoe UI", Arial, sans-serif !important;
+                }
+                .mermaid-diagram .flowchart-link { stroke-width: 1px !important; }
+                .mermaid-diagram marker path {
+                  fill: #858b91 !important;
+                  stroke: #858b91 !important;
+                }
+                .mermaid-error {
+                  margin: 18px 0 24px;
+                  padding: 18px;
+                  border: 1px solid #d0d7de;
+                  border-radius: 7px;
+                  color: #a40e26;
+                  background: #f6f8fa;
+                  text-align: center;
+                }
                 @page { margin: 0.42in 0.4in 0.42in 0.5in; }
                 @media print {
                   body {
@@ -110,11 +158,85 @@ public sealed class MarkdownRenderer
                   h4 { font-size: 12.5px; }
                   pre code { font-size: 11.5px; }
                   table { font-size: 12px; }
+                  .mermaid-diagram {
+                    min-width: 0;
+                    margin: 12px auto 18px;
+                    overflow: visible;
+                    break-inside: avoid;
+                    page-break-inside: avoid;
+                  }
                 }
               </style>
             </head>
             <body>
             {{body}}
+            <script src="https://markdown-editor.local/mermaid.min.js"></script>
+            <script>
+              (() => {
+                const diagrams = [];
+                const notifyReady = () => window.chrome?.webview?.postMessage('preview-ready');
+
+                const renderDiagrams = async () => {
+                  const blocks = document.querySelectorAll('pre > code.language-mermaid');
+                  if (blocks.length === 0) return;
+                  if (!window.mermaid) throw new Error('The Mermaid renderer could not be loaded.');
+
+                  window.mermaid.initialize({
+                    startOnLoad: false,
+                    securityLevel: 'strict',
+                    suppressErrorRendering: true,
+                    theme: 'base',
+                    look: 'classic',
+                    fontFamily: 'Segoe UI Variable Text, Segoe UI, Arial, sans-serif',
+                    themeVariables: {
+                      background: '#ffffff',
+                      fontFamily: 'Segoe UI Variable Text, Segoe UI, Arial, sans-serif',
+                      fontSize: '13px',
+                      primaryColor: '#e7f2fc',
+                      primaryTextColor: '#245aa5',
+                      primaryBorderColor: '#cad8e4',
+                      secondaryColor: '#e7f2fc',
+                      secondaryTextColor: '#245aa5',
+                      secondaryBorderColor: '#cad8e4',
+                      tertiaryColor: '#f7fafc',
+                      tertiaryTextColor: '#245aa5',
+                      tertiaryBorderColor: '#cad8e4',
+                      lineColor: '#858b91',
+                      edgeLabelBackground: '#ffffff',
+                      clusterBkg: '#f7fafc',
+                      clusterBorder: '#d8e0e7'
+                    },
+                    flowchart: {
+                      curve: 'linear',
+                      htmlLabels: true,
+                      nodeSpacing: 48,
+                      rankSpacing: 46,
+                      padding: 16,
+                      useMaxWidth: true
+                    }
+                  });
+
+                  blocks.forEach((code) => {
+                    const diagram = document.createElement('div');
+                    diagram.className = 'mermaid mermaid-diagram';
+                    diagram.textContent = code.textContent ?? '';
+                    code.parentElement?.replaceWith(diagram);
+                    diagrams.push(diagram);
+                  });
+
+                  await window.mermaid.run({ nodes: diagrams });
+                };
+
+                renderDiagrams()
+                  .catch(() => {
+                    diagrams.forEach((diagram) => {
+                      diagram.className = 'mermaid-error';
+                      diagram.textContent = 'Unable to render this Mermaid diagram.';
+                    });
+                  })
+                  .finally(notifyReady);
+              })();
+            </script>
             </body>
             </html>
             """;

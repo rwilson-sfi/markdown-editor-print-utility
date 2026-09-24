@@ -234,6 +234,114 @@ body {
   overflow: hidden;
 }
 
+#rich-editor .milkdown .milkdown-code-block:has(.mermaid-diagram),
+#rich-editor .milkdown .milkdown-code-block:has(.mermaid-loading),
+#rich-editor .milkdown .milkdown-code-block:has(.mermaid-error) {
+  margin: 16px 0 22px;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+#rich-editor .milkdown .milkdown-code-block:has(.mermaid-diagram).selected {
+  outline: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  outline-offset: 8px;
+  border-radius: var(--radius-medium);
+}
+
+#rich-editor .milkdown .milkdown-code-block:has(.mermaid-diagram) .tools {
+  position: absolute;
+  z-index: 2;
+  top: -4px;
+  right: 0;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+#rich-editor .milkdown .milkdown-code-block:has(.mermaid-diagram):hover .tools,
+#rich-editor .milkdown .milkdown-code-block:has(.mermaid-diagram).selected .tools {
+  opacity: 1;
+}
+
+#rich-editor .milkdown .milkdown-code-block:has(.mermaid-diagram) .language-picker {
+  display: none;
+}
+
+#rich-editor .milkdown .milkdown-code-block:has(.mermaid-diagram) .preview-panel .preview {
+  padding: 12px 0 2px;
+  overflow-x: auto;
+  text-align: center;
+}
+
+#rich-editor .milkdown .mermaid-diagram {
+  min-width: 520px;
+  color: #245aa5;
+  background: transparent;
+}
+
+#rich-editor .milkdown .mermaid-diagram svg {
+  display: block;
+  width: 100%;
+  max-width: 100% !important;
+  height: auto;
+  margin: 0 auto;
+  font-family: "Segoe UI Variable Text", "Segoe UI", Arial, sans-serif !important;
+}
+
+#rich-editor .milkdown .mermaid-diagram .node rect,
+#rich-editor .milkdown .mermaid-diagram .node polygon,
+#rich-editor .milkdown .mermaid-diagram .node path {
+  stroke-width: 1px !important;
+}
+
+#rich-editor .milkdown .mermaid-diagram .node rect {
+  rx: 13px;
+  ry: 13px;
+}
+
+#rich-editor .milkdown .mermaid-diagram .nodeLabel,
+#rich-editor .milkdown .mermaid-diagram .nodeLabel p {
+  color: #245aa5 !important;
+  font-family: "Segoe UI Variable Text", "Segoe UI", Arial, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.22 !important;
+}
+
+#rich-editor .milkdown .mermaid-diagram .edgeLabel,
+#rich-editor .milkdown .mermaid-diagram .edgeLabel p {
+  color: var(--text-muted) !important;
+  background: var(--surface) !important;
+  font: 12px/1.25 var(--font-ui) !important;
+}
+
+#rich-editor .milkdown .mermaid-diagram .flowchart-link {
+  stroke-width: 1px !important;
+}
+
+#rich-editor .milkdown .mermaid-diagram marker path {
+  fill: #858b91 !important;
+  stroke: #858b91 !important;
+}
+
+#rich-editor .milkdown .mermaid-loading,
+#rich-editor .milkdown .mermaid-error {
+  display: block;
+  padding: 26px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-medium);
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  font: 12px/1.4 var(--font-ui);
+  text-align: center;
+}
+
+#rich-editor .milkdown .mermaid-error {
+  color: var(--destructive);
+}
+
 #rich-editor .milkdown .ProseMirror table {
   margin: 10px 0 14px;
   border: 1px solid var(--border);

@@ -69,11 +69,13 @@ Version one targets GitHub-style Markdown and supports:
 - Tables
 - Strikethrough
 - Fenced code blocks with syntax highlighting
+- Mermaid fenced diagrams
 - Hyperlinks
 - Local images
 
-Mermaid diagrams, mathematical notation, footnotes, and embedded HTML are outside the version-one
-rendering contract. Their source must still be preserved.
+Mermaid diagram rendering was added as an approved post-baseline enhancement. Mathematical notation,
+footnotes, and embedded HTML remain outside the rendering contract; their source must still be
+preserved.
 
 ### 7. Document handling
 

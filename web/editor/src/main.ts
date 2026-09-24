@@ -2,6 +2,7 @@ import { Crepe } from '@milkdown/crepe'
 import '@milkdown/crepe/theme/common/style.css'
 import '@milkdown/crepe/theme/frame.css'
 import { replaceAll } from '@milkdown/kit/utils'
+import mermaid from 'mermaid'
 import './style.css'
 
 type EditorMode = 'rich' | 'source' | 'split'
@@ -54,6 +55,70 @@ let currentDocumentId = ''
 
 const postToHost = (message: unknown) => window.chrome?.webview?.postMessage(message)
 
+mermaid.initialize({
+  startOnLoad: false,
+  securityLevel: 'strict',
+  suppressErrorRendering: true,
+  theme: 'base',
+  look: 'classic',
+  fontFamily: 'Segoe UI Variable Text, Segoe UI, Arial, sans-serif',
+  themeVariables: {
+    background: '#ffffff',
+    fontFamily: 'Segoe UI Variable Text, Segoe UI, Arial, sans-serif',
+    fontSize: '13px',
+    primaryColor: '#e7f2fc',
+    primaryTextColor: '#245aa5',
+    primaryBorderColor: '#cad8e4',
+    secondaryColor: '#e7f2fc',
+    secondaryTextColor: '#245aa5',
+    secondaryBorderColor: '#cad8e4',
+    tertiaryColor: '#f7fafc',
+    tertiaryTextColor: '#245aa5',
+    tertiaryBorderColor: '#cad8e4',
+    lineColor: '#858b91',
+    edgeLabelBackground: '#ffffff',
+    clusterBkg: '#f7fafc',
+    clusterBorder: '#d8e0e7',
+  },
+  flowchart: {
+    curve: 'linear',
+    htmlLabels: true,
+    nodeSpacing: 48,
+    rankSpacing: 46,
+    padding: 16,
+    useMaxWidth: true,
+  },
+})
+
+let mermaidRenderSequence = 0
+
+const renderDiagramPreview = (
+  language: string,
+  content: string,
+  applyPreview: (value: null | string | HTMLElement) => void,
+) => {
+  if (language.trim().toLowerCase() !== 'mermaid') return null
+
+  const renderId = `markdown-editor-mermaid-${++mermaidRenderSequence}`
+  void mermaid
+    .render(renderId, content)
+    .then(({ svg }) => {
+      const diagram = document.createElement('div')
+      diagram.className = 'mermaid-diagram'
+      diagram.innerHTML = svg
+      applyPreview(diagram)
+    })
+    .catch((error: unknown) => {
+      const message = document.createElement('div')
+      message.className = 'mermaid-error'
+      message.textContent =
+        error instanceof Error ? `Mermaid: ${error.message}` : 'Unable to render this Mermaid diagram.'
+      applyPreview(message)
+    })
+
+  return undefined
+}
+
 const crepe = new Crepe({
   root: '#rich-editor',
   defaultValue: '',
@@ -61,6 +126,13 @@ const crepe = new Crepe({
     [Crepe.Feature.AI]: false,
     [Crepe.Feature.Latex]: false,
     [Crepe.Feature.TopBar]: true,
+  },
+  featureConfigs: {
+    [Crepe.Feature.CodeMirror]: {
+      renderPreview: renderDiagramPreview,
+      previewOnlyByDefault: true,
+      previewLoading: '<span class="mermaid-loading">Rendering diagram…</span>',
+    },
   },
 })
 

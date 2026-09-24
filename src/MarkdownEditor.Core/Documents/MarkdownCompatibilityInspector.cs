@@ -10,9 +10,9 @@ public static partial class MarkdownCompatibilityInspector
 
         var risks = new HashSet<string>(StringComparer.Ordinal);
 
-        if (FencedExtensionPattern().IsMatch(markdown))
+        if (MathematicalFencePattern().IsMatch(markdown))
         {
-            risks.Add("Mermaid or mathematical fenced blocks");
+            risks.Add("mathematical fenced blocks");
         }
 
         if (FootnotePattern().IsMatch(markdown))
@@ -33,8 +33,8 @@ public static partial class MarkdownCompatibilityInspector
         return risks.ToArray();
     }
 
-    [GeneratedRegex(@"(?im)^\s*`{3,}\s*(?:mermaid|math|latex)\b")]
-    private static partial Regex FencedExtensionPattern();
+    [GeneratedRegex(@"(?im)^\s*`{3,}\s*(?:math|latex)\b")]
+    private static partial Regex MathematicalFencePattern();
 
     [GeneratedRegex(@"(?m)\[\^[^\]\r\n]+\](?::)?")]
     private static partial Regex FootnotePattern();
