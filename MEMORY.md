@@ -67,6 +67,15 @@ Curated durable knowledge shared across assistants and machines. Do not store cr
   the primary listener recover from a foreign-owned pipe name; it is build-verified, with runtime
   acceptance pending host policy.
 
+- **2026-10-19 — First publication approved and completed.** The user approved creating the private
+  GitHub repository `rwilson-sfi/markdown-editor-print-utility` (chosen over the
+  `security-first-managers` org to preserve the project's Shared, employer-portable classification;
+  GitLab remains unreachable from this host). Both branches pushed and verified; `origin` is wired
+  with tracking. GitHub secret scanning/push protection are unavailable on this private
+  personal-account plan — a recorded deviation; pre-push tree and history scans found no secrets.
+  Workspace-dashboard registration remains deferred to a non-work host because the bootstrap derives
+  GitLab clone targets.
+
 ## Constraints
 
 - Target Windows and behave as a system-tray application.

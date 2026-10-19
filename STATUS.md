@@ -1,11 +1,12 @@
 # Project Status
 
 - Status: Active
-- Updated: 2026-09-02 21:24 ET
+- Updated: 2026-10-19 12:14 ET
 - Current service: Claude Code / Claude Fable 5
 - Current host: SFI-P14-2255
-- Repository boundary: Independent local repository; active development worktree at
-  `C:\SFM\Dev\MarkdownEditor`
+- Repository boundary: Independent repository; active development worktree at
+  `C:\SFM\Dev\MarkdownEditor`; private remote `origin` at
+  `github.com/rwilson-sfi/markdown-editor-print-utility` (published 2026-10-19 with user approval)
 - Branch: `host/sfi-p14-2255`
 - Last runtime-verified implementation commit: `af6ccba0d39c7d6b0721b1b8e99f03a0cf227992`
 - Latest build-verified implementation commit: `28df687` (single-instance hand-off fix)
@@ -27,8 +28,18 @@ dialog, and the primary listener survives a foreign-owned pipe name), and (2) ho
 control denying first execution of freshly built unsigned assemblies in both `C:\AI-Workspace` and
 `C:\SFM\Dev`. `28df687` builds with zero warnings and passes formatting verification; test execution
 and runtime acceptance remain blocked by application control. A healthy-path hand-off regression with
-the allowlisted pre-fix binaries passed (secondary exit 0, one process, file forwarded). No remote is
-configured.
+the allowlisted pre-fix binaries passed (secondary exit 0, one process, file forwarded).
+
+2026-09-24 added local Mermaid diagram rendering (`c06f206`) without updating STATUS; see that day's
+worklog for its verification record.
+
+2026-10-19 the user approved first publication. The private repository
+`github.com/rwilson-sfi/markdown-editor-print-utility` was created; tree and full-history secret
+scans found nothing; both branches pushed (`main` `204d20c`, `host/sfi-p14-2255` `c06f206`, 18
+commits, no tags) and remote refs were verified to match local SHAs; `origin` was then wired with
+tracking. GitHub secret scanning and push protection could not be enabled: the API reports the
+feature unavailable for this private personal-account repository (requires a public repository or
+GitHub Advanced Security). This is a recorded deviation from the source-control policy's step 4.
 
 ## Next action
 
@@ -44,9 +55,11 @@ then continue the implementation plan.
   admission or a later signed build. Do not weaken or bypass endpoint-security controls.
 - Do not run the editor elevated: an elevated primary owns the single-instance pipe and normal
   launches cannot connect to it (now reported by dialog instead of crashing).
-- Remote creation, publication, and cross-host workspace registration remain deferred.
-- Registering the project in the current `WORKSPACE.md` dashboard before its GitLab repository exists
-  would make `scripts/clone-rw-ws-01.sh` attempt a nonexistent remote and fail.
+- Cross-host workspace registration remains deferred: the non-work dashboard bootstrap derives clone
+  targets from GitLab, but this project's remote is now GitHub, and this host cannot write to the
+  non-work spine. Reconcile registration from `RW-WS-01` or `RW-SLS2-01`.
+- GitHub secret scanning/push protection are unavailable on the private personal-account repository;
+  rely on pre-push scanning until the repository is public or Advanced Security is available.
 - Signed packaging requires a signing identity/certificate in a later release gate.
 - Live Explorer-verb or sign-in startup registration remains separately approval-gated; no registry
   or startup state has been changed.
@@ -58,5 +71,7 @@ development milestone, not a release. Folder navigation, tabs, single-instance t
 original five-palette interface are runtime-accepted; the eleven-palette gallery, typography/print
 styling, external-change/recovery/recent-files slice, and the hand-off fix are build-verified and
 pending host-policy runtime acceptance. It does not yet install Explorer verbs, startup behavior, or
-a signed package. Continue from [docs/IMPLEMENTATION-PLAN.md](docs/IMPLEMENTATION-PLAN.md). The local
-repository has no remote; do not add one or publish without explicit destination approval.
+a signed package. Continue from [docs/IMPLEMENTATION-PLAN.md](docs/IMPLEMENTATION-PLAN.md). The repository's
+authoritative remote is the private `origin` at `github.com/rwilson-sfi/markdown-editor-print-utility`
+(approved 2026-10-19); push closeouts there and do not change visibility or create additional remotes
+without explicit approval.
