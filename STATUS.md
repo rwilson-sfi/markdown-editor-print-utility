@@ -5,8 +5,9 @@
 - Current service: Claude Code / Claude Fable 5
 - Current host: SFI-P14-2255
 - Repository boundary: Independent repository; active development worktree at
-  `C:\SFM\Dev\MarkdownEditor`; private remote `origin` at
-  `github.com/rwilson-sfi/markdown-editor-print-utility` (published 2026-10-19 with user approval)
+  `C:\SFM\Dev\MarkdownEditor`; public remote `origin` at
+  `github.com/rwilson-sfi/markdown-editor-print-utility` (published private 2026-10-19; made public
+  the same day with user approval after a recorded readiness pass; MIT licensed)
 - Branch: `host/sfi-p14-2255`
 - Last runtime-verified implementation commit: `af6ccba0d39c7d6b0721b1b8e99f03a0cf227992`
 - Latest build-verified implementation commit: `28df687` (single-instance hand-off fix)
@@ -65,8 +66,11 @@ then continue the implementation plan.
 - Cross-host workspace registration remains deferred: the non-work dashboard bootstrap derives clone
   targets from GitLab, but this project's remote is now GitHub, and this host cannot write to the
   non-work spine. Reconcile registration from `RW-WS-01` or `RW-SLS2-01`.
-- GitHub secret scanning/push protection are unavailable on the private personal-account repository;
-  rely on pre-push scanning until the repository is public or Advanced Security is available.
+- GitHub secret scanning and push protection are enabled (available since the repository became
+  public on 2026-10-19); the earlier private-repo deviation is closed.
+- The default branch `main` still holds only the initial baseline (`204d20c`); public visitors do not
+  see the source or LICENSE until `main` is advanced or the default branch is changed — a branch-model
+  decision for the user.
 - Signed packaging requires a signing identity/certificate in a later release gate.
 - Live Explorer-verb or sign-in startup registration remains separately approval-gated; no registry
   or startup state has been changed.
