@@ -53,7 +53,7 @@ public partial class MainWindow : Window, IDisposable
         DataContext = this;
         _trayIcon = new WinForms.NotifyIcon
         {
-            Icon = System.Drawing.SystemIcons.Application,
+            Icon = LoadApplicationIcon(),
             Text = "Markdown Editor",
             Visible = true,
             ContextMenuStrip = BuildTrayMenu(),
@@ -62,6 +62,24 @@ public partial class MainWindow : Window, IDisposable
         _recoveryTimer.Tick += async (_, _) => await SnapshotDirtyDocumentsAsync();
         UpdateThemeVisualState();
         UpdateWindowState();
+    }
+
+    private static System.Drawing.Icon LoadApplicationIcon()
+    {
+        // The tray icon reuses the icon embedded in the executable so the two can never diverge.
+        try
+        {
+            if (Environment.ProcessPath is { } processPath
+                && System.Drawing.Icon.ExtractAssociatedIcon(processPath) is { } icon)
+            {
+                return icon;
+            }
+        }
+        catch (Exception exception) when (exception is IOException or ArgumentException or UnauthorizedAccessException)
+        {
+        }
+
+        return System.Drawing.SystemIcons.Application;
     }
 
     public ObservableCollection<DocumentSession> Documents { get; } = [];

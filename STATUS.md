@@ -1,7 +1,7 @@
 # Project Status
 
 - Status: Active
-- Updated: 2026-10-19 12:14 ET
+- Updated: 2026-10-19 12:25 ET
 - Current service: Claude Code / Claude Fable 5
 - Current host: SFI-P14-2255
 - Repository boundary: Independent repository; active development worktree at
@@ -41,6 +41,13 @@ tracking. GitHub secret scanning and push protection could not be enabled: the A
 feature unavailable for this private personal-account repository (requires a public repository or
 GitHub Advanced Security). This is a recorded deviation from the source-control policy's step 4.
 
+Later on 2026-10-19 an application icon was added: a generated multi-resolution `MarkdownEditor.ico`
+(ink rounded square, white Markdown-style M, blue down arrow; bolder variant for the 16–32 px sizes)
+embedded via `<ApplicationIcon>`, with the tray icon now extracted from the executable with a
+system-icon fallback. Application control admitted fresh builds this session: the 39-case automated
+suite passed and the new executable loaded and ran its startup path (secondary launch exited 0
+against the running primary). Full visual acceptance of the commits since `af6ccba` remains open.
+
 ## Next action
 
 When the host admits fresh assemblies: run the automated suite, runtime-accept `28df687` (including a
@@ -49,10 +56,10 @@ then continue the implementation plan.
 
 ## Blockers
 
-- Host application control denies first execution of freshly built unsigned assemblies in
-  `C:\AI-Workspace`, temp locations, and the approved `C:\SFM\Dev\MarkdownEditor` worktree
-  (recorded 2026-08-24 through 2026-09-02). Compilation succeeds; runtime acceptance requires policy
-  admission or a later signed build. Do not weaken or bypass endpoint-security controls.
+- Host application control intermittently denies first execution of freshly built unsigned
+  assemblies (recorded 2026-08-24 through 2026-09-02; fresh builds were admitted on 2026-10-19).
+  When denied, record build-verified status and retry later; do not weaken or bypass
+  endpoint-security controls.
 - Do not run the editor elevated: an elevated primary owns the single-instance pipe and normal
   launches cannot connect to it (now reported by dialog instead of crashing).
 - Cross-host workspace registration remains deferred: the non-work dashboard bootstrap derives clone

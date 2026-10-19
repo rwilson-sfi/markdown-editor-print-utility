@@ -15,6 +15,7 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>MarkdownEditor.ico</ApplicationIcon>
     <EditorProjectDirectory>$(MSBuildProjectDirectory)\..\..\web\editor</EditorProjectDirectory>
   </PropertyGroup>
 
