@@ -9,3 +9,4 @@ date,start,end,hours,actor,host,jira,task,basis,summary
 2026-09-02,20:57,21:24,0.45,Claude Fable 5,SFI-P14-2255,,print-report-diagnosis,estimated,"Diagnosed the print report as single-instance hand-off crashes plus host application-control denials; fixed and build-verified the hand-off failure handling"
 2026-10-19,12:05,12:20,0.25,Claude Fable 5,SFI-P14-2255,,github-publication,estimated,"Created, verified, and wired the private GitHub remote rwilson-sfi/markdown-editor-print-utility with user-approved destination"
 2026-10-19,12:08,12:25,0.28,Claude Fable 5,SFI-P14-2255,,app-icon,recorded,"Designed and embedded the application icon, routed the tray icon through the executable, and verified with a green 39-case suite and runtime smoke"
+2026-10-19,12:25,12:29,0.07,Claude Fable 5,SFI-P14-2255,,public-readiness,recorded,"Swept history for public exposure (clean source; internal references confined to governance files and commit metadata) and added the MIT license"
